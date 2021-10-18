@@ -1,0 +1,20 @@
+{
+  "apiPort": "",
+  "signingKey": "",
+  "mongoCredentials": {
+    "user": "",
+    "password": "",
+    "host": "",
+    "port": ""
+  },
+  "mongoDatabase": {
+    "resources": "",
+    "data": ""
+  },
+  "mongoCollection": {
+    "users": "",
+    "applications": "",
+    "sourceTokens": "",
+    "storages": ""
+  }
+}

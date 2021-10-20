@@ -25,7 +25,7 @@ func main() {
 	/*
 		Read configuration file
 	*/
-	config.ReadConf("config/config.json", &cfg)
+	config.ReadConf("config.json", &cfg)
 	/*
 		Connect to MongoDB
 	*/

@@ -1,0 +1,24 @@
+{
+  "apiPort": "",
+  "mongoCredentials": {
+    "user": "",
+    "password": "",
+    "host": "",
+    "port": ""
+  },
+  "amqpCredentials": {
+    "user": "",
+    "password": "",
+    "host": "",
+    "port": ""
+  },
+  "amqpQueues": {
+    "incomingData": ""
+  },
+  "mongoDatabase": {
+    "resources": ""
+  },
+  "mongoCollection": {
+    "sourceTokens": ""
+  }
+}

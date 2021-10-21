@@ -297,7 +297,8 @@ func ShareStorage(c echo.Context, client *mongo.Client, db string, storageCol st
 	filter := bson.D{{"_id", storageId}, {"user_id", userId},
 		{"shared_with_id", bson.D{{"$nin", bson.A{body["targetId"]}}}}}
 	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
-		{"$push", bson.D{{"shared_with_id", body["targetId"]}}}})
+		{"$push", bson.D{{"shared_with_id", body["targetId"]}}},
+		{"$set", bson.D{{"modified_at", time.Now()}}}})
 	if one.MatchedCount == 0 {
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or already shared"})
 	}
@@ -341,7 +342,8 @@ func UnshareStorage(c echo.Context, client *mongo.Client, db string, storageCol 
 	filter := bson.D{{"_id", storageId}, {"user_id", userId},
 		{"shared_with_id", bson.D{{"$in", bson.A{body["targetId"]}}}}}
 	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
-		{"$pull", bson.D{{"shared_with_id", body["targetId"]}}}})
+		{"$pull", bson.D{{"shared_with_id", body["targetId"]}}},
+		{"$set", bson.D{{"modified_at", time.Now()}}}})
 	if one.MatchedCount == 0 {
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or not sharing with target"})
 	}

@@ -16,7 +16,7 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
 	storageId := c.Param("id")
-	//Get storage
+	//Get storage from id
 	//Check if storage belongs to this userId or if it is shared to it
 	findQuery := bson.D{
 		{"_id", storageId},

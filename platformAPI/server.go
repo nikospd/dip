@@ -79,6 +79,8 @@ func main() {
 	r.DELETE("storage/:id", deleteStorage)
 	r.POST("share/storage/:id", shareStorage)
 	r.POST("unshare/storage/:id", unshareStorage)
+	//Data routing
+	r.GET("storage/data/:id", getStorageData)
 	/*
 		Assign resources to unauthenticated endpoints
 	*/
@@ -180,4 +182,10 @@ func unshareStorage(c echo.Context) error {
 	storageCol := cfg.MongoCollection.Storages
 	ursCol := cfg.MongoCollection.URStatus
 	return resources.UnshareStorage(c, client, db, storageCol, ursCol)
+}
+func getStorageData(c echo.Context) error {
+	resourcesDb := cfg.MongoDatabase.Resources
+	dataDb := cfg.MongoDatabase.Data
+	storageCol := cfg.MongoCollection.Storages
+	return resources.GetStorageData(c, client, resourcesDb, dataDb, storageCol)
 }

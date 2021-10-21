@@ -24,6 +24,7 @@ type Configuration struct {
 		SourceTokens string `json:"sourceTokens"`
 		Storages     string `json:"storages"`
 		Users        string `json:"users"`
+		URStatus     string `json:"userResourcesStatus"`
 	} `json:"mongoCollection"`
 }
 

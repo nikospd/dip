@@ -73,6 +73,12 @@ func main() {
 	r.DELETE("application/:id", deleteApplication)
 	//Storage property routing
 	r.POST("storage", createStorage)
+	r.GET("storage/:id", getStorage)
+	r.GET("storages/:id", getStorageByApp)
+	r.PUT("storage/:id", updateStorage)
+	r.DELETE("storage/:id", deleteStorage)
+	r.POST("share/storage/:id", shareStorage)
+	r.POST("unshare/storage/:id", unshareStorage)
 	/*
 		Assign resources to unauthenticated endpoints
 	*/
@@ -142,4 +148,36 @@ func createStorage(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	storageCol := cfg.MongoCollection.Storages
 	return resources.CreateStorage(c, client, db, storageCol)
+}
+func getStorageByApp(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	return resources.GetStoragesByApp(c, client, db, storageCol)
+}
+func getStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	return resources.GetStorage(c, client, db, storageCol)
+}
+func updateStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	return resources.UpdateStorage(c, client, db, storageCol)
+}
+func deleteStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	return resources.DeleteStorage(c, client, db, storageCol)
+}
+func shareStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	ursCol := cfg.MongoCollection.URStatus
+	return resources.ShareStorage(c, client, db, storageCol, ursCol)
+}
+func unshareStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	ursCol := cfg.MongoCollection.URStatus
+	return resources.UnshareStorage(c, client, db, storageCol, ursCol)
 }

@@ -61,7 +61,7 @@ type Storage struct {
 	*/
 }
 
-type UserResourceStatus struct {
-	UserId              string   `json:"userId" bson:"_id,omitempty"`
-	SharedStorageWithMe []string `json:"sharedStorageWithMe" bson:"shared_storage_with_me,omitempty"` //StorageIds that other users sharing with me
+type UserResourcesStatus struct {
+	UserId               string   `json:"userId" bson:"_id,omitempty"`
+	SharedStoragesWithMe []string `json:"sharedStorageWithMe" bson:"shared_storage_with_me,omitempty"` //StorageIds that other users sharing with me
 }

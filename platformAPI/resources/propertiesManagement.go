@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"time"
 )
@@ -127,7 +128,7 @@ func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol s
 		{"_id", appId},
 		{"user_id", userId}})
 	if one.DeletedCount == 0 {
-		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Token not deleted"})
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Application not deleted"})
 	}
 	if err != nil {
 		fmt.Println(err)
@@ -135,18 +136,6 @@ func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol s
 	}
 	//TODO: Delete the storages that are assigned in this app as well
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
-}
-
-//TODO:
-
-func AddStorageToApplication(c echo.Context, client *mongo.Client) error {
-	return nil
-}
-
-//TODO:
-
-func RemoveStorageFromApplication(c echo.Context, client *mongo.Client) error {
-	return nil
 }
 
 func CreateStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
@@ -178,4 +167,211 @@ func CreateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	return c.JSON(http.StatusCreated, echo.Map{"msg": "Storage created", "id": storage.StorageId})
 }
 
-//TODO: get, update, delete, share, stopSharing.
+func GetStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+
+	collection := client.Database(db).Collection(storageCol)
+	one := collection.FindOne(context.TODO(), bson.D{
+		{"user_id", userId},
+		{"_id", storageId}})
+	if one.Err() != nil {
+		if one.Err() == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad gateway"})
+	}
+	var storage utils.Storage
+	err := one.Decode(&storage)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get storage"})
+	}
+	return c.JSON(http.StatusOK, storage)
+}
+
+func GetStoragesByApp(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	appId := c.Param("id")
+
+	collection := client.Database(db).Collection(storageCol)
+	cur, err := collection.Find(context.TODO(), bson.D{
+		{"user_id", userId},
+		{"app_id", appId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("not a match!")
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var storageTable []utils.Storage
+	err = cur.All(context.TODO(), &storageTable)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Error at getting the storages"})
+	}
+	return c.JSON(http.StatusOK, storageTable)
+}
+
+func UpdateStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	storage := new(utils.Storage)
+	if err := c.Bind(storage); err != nil {
+		return err
+	}
+	collection := client.Database(db).Collection(storageCol)
+	filter := bson.D{{"_id", storageId}, {"user_id", userId}}
+	//Sanitize data
+	storage.AppId = ""
+	storage.UserId = ""
+	storage.CreatedAt = time.Time{}
+	storage.ModifiedAt = time.Now()
+	storage.SharedWithId = []string{}
+	storage.Type = ""
+	//Create update query
+	var updateFields bson.D
+	tmpFields, _ := bson.Marshal(storage)
+	unmarshalErr := bson.Unmarshal(tmpFields, &updateFields)
+	if unmarshalErr != nil {
+		fmt.Println(unmarshalErr)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	updateQuery := bson.D{{"$set", updateFields}}
+	//Update the database
+	one, err := collection.UpdateOne(context.TODO(), filter, updateQuery)
+	//Handle errors and respond
+	if one.MatchedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found"})
+	}
+	if one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage not modified"})
+	}
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func DeleteStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	collection := client.Database(db).Collection(storageCol)
+	one, err := collection.DeleteOne(context.TODO(), bson.D{
+		{"_id", storageId},
+		{"user_id", userId}})
+	if one.DeletedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not deleted"})
+	}
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	//TODO: Delete the shared ids that are assigned in this storage as well from the userResourcesStratus
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func ShareStorage(c echo.Context, client *mongo.Client, db string, storageCol string, ursCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	body := echo.Map{}
+	err := c.Bind(&body)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if body["targetId"] == nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "No Id provided"})
+	}
+	//TODO: Check if the target id exist as a user to share a storage
+	//Set the SharedWithId in storage resource
+	storageCollection := client.Database(db).Collection(storageCol)
+	filter := bson.D{{"_id", storageId}, {"user_id", userId},
+		{"shared_with_id", bson.D{{"$nin", bson.A{body["targetId"]}}}}}
+	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
+		{"$push", bson.D{{"shared_with_id", body["targetId"]}}}})
+	if one.MatchedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or already shared"})
+	}
+	if one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage not modified"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	//Now add the storage id into the userResourcesStatus of the target id
+	ursCollection := client.Database(db).Collection(ursCol)
+	filter = bson.D{{"_id", body["targetId"]},
+		{"shared_storage_with_me", bson.D{{"$nin", bson.A{storageId}}}}}
+	updateQuery := bson.D{{"$push", bson.D{{"shared_storage_with_me", storageId}}}}
+	opts := options.Update().SetUpsert(true)
+	one, err = ursCollection.UpdateOne(context.TODO(), filter, updateQuery, opts)
+	if one.UpsertedCount == 0 && one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage already exist in urStatus"})
+	}
+	if err != nil {
+		//TODO: Delete the target id from the storage as well cause the pipeline broke
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func UnshareStorage(c echo.Context, client *mongo.Client, db string, storageCol string, ursCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	body := echo.Map{}
+	err := c.Bind(&body)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if body["targetId"] == nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "No Id provided"})
+	}
+	storageCollection := client.Database(db).Collection(storageCol)
+	filter := bson.D{{"_id", storageId}, {"user_id", userId},
+		{"shared_with_id", bson.D{{"$in", bson.A{body["targetId"]}}}}}
+	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
+		{"$pull", bson.D{{"shared_with_id", body["targetId"]}}}})
+	if one.MatchedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or not sharing with target"})
+	}
+	if one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage not modified"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	//Now add the storage id into the userResourcesStatus of the target id
+	ursCollection := client.Database(db).Collection(ursCol)
+	filter = bson.D{{"_id", body["targetId"]},
+		{"shared_storage_with_me", bson.D{{"$in", bson.A{storageId}}}}}
+	updateQuery := bson.D{{"$pull", bson.D{{"shared_storage_with_me", storageId}}}}
+	opts := options.Update().SetUpsert(true)
+	one, err = ursCollection.UpdateOne(context.TODO(), filter, updateQuery, opts)
+	if one.UpsertedCount == 0 && one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage did not exist in urStatus"})
+	}
+	if err != nil {
+		//TODO: Delete the target id from the storage as well cause the pipeline broke
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func AddStorageToApplication(c echo.Context, client *mongo.Client) error {
+	return nil
+}
+
+func RemoveStorageFromApplication(c echo.Context, client *mongo.Client) error {
+	return nil
+}

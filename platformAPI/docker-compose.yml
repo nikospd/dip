@@ -1,0 +1,19 @@
+version: '2'
+services:
+
+  platformapi:
+    build:
+      context: .
+      network: dev-network
+      dockerfile: Dockerfile
+      target: dev
+    container_name: dip-platformapi
+    image: dip-platformapi-img:latest
+    restart: always
+    ports:
+      - 1323:1323
+    networks:
+      - platform-api
+networks:
+  platform-api:
+    name: dev-network

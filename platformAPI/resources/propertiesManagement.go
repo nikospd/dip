@@ -29,6 +29,16 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 		return err
 	}
 	app.AppId = utils.CreateRandomHash(20)
+	switch app.SourceType {
+	case "pull":
+		fmt.Println("New push mechanism")
+		app.SourceDetails = ""
+	case "push":
+		fmt.Println("New pull mechanism")
+		return c.JSON(http.StatusNotImplemented, echo.Map{"msg": "Source type not implemented yet."})
+	default:
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Wrong type source"})
+	}
 	if app.PersistRaw {
 		if app.RawStorageId == "" {
 			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "RawStorageId not provided but raw persistence was selected"})
@@ -44,6 +54,8 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 		if oneStorage.MatchedCount == 0 {
 			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Storage Id that provided, does not match"})
 		}
+	} else {
+		app.RawStorageId = ""
 	}
 	app.UserId = userId
 	app.CreatedAt = time.Now()

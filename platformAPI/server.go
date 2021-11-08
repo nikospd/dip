@@ -86,6 +86,11 @@ func main() {
 	*/
 	e.POST("/login", userLogin)
 	/*
+		Handle cors policy
+		Normally you should add cors with config and add your domain here.
+	*/
+	e.Use(middleware.CORS())
+	/*
 		Start the web server
 	*/
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", cfg.ApiPort)))

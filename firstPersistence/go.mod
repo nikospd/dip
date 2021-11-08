@@ -1,4 +1,4 @@
-module dev.com/dataEntryAPI
+module dev.com/firstPersistence
 
 go 1.16
 

@@ -60,6 +60,8 @@ func main() {
 	}
 	r := e.Group("/")
 	r.Use(middleware.JWTWithConfig(jwtConfig))
+	//User Info routing
+	r.GET("user/profile", getUser)
 	//SourceToken routing
 	r.POST("source/token", createSourceToken)
 	r.GET("source/token", getSourceTokenByUser)
@@ -77,8 +79,8 @@ func main() {
 	r.GET("storages/:id", getStorageByApp)
 	r.PUT("storage/:id", updateStorage)
 	r.DELETE("storage/:id", deleteStorage)
-	r.POST("share/storage/:id", shareStorage)
-	r.POST("unshare/storage/:id", unshareStorage)
+	r.POST("storage/share/:id", shareStorage)
+	r.POST("storage/unshare/:id", unshareStorage)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -99,6 +101,11 @@ func main() {
 /*
 Wrapper functions for resources
 */
+func getUser(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	userCol := cfg.MongoCollection.Users
+	return resources.GetUser(c, client, db, userCol)
+}
 func userLogin(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	userCol := cfg.MongoCollection.Users

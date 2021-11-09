@@ -20,6 +20,12 @@ type LoginUserCredentials struct {
 	UserId   string `json:"userId" bson:"_id"`
 }
 
+type UserProfile struct {
+	Username string `json:"username" bson:"username,omitempty"`
+	UserId   string `json:"userId" bson:"_id,omitempty"`
+	//	TODO: mail, phone etc.
+}
+
 func (s *SourceTokenClaims) PrintTheClaims() {
 	fmt.Println("UserId: ", s.UserId)
 	fmt.Println("AppId: ", s.AppId)

@@ -54,3 +54,32 @@ func UserForgotPassword() {
 func UserChangePassword() {
 	fmt.Println("Implement me")
 }
+
+func GetUser(c echo.Context, client *mongo.Client, db string, userCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	searchValue := claims.Id //userid
+	searchKey := "_id"
+	username := c.QueryParam("name")
+	if username != "" {
+		searchValue = username
+		searchKey = "username"
+	}
+	userCollection := client.Database(db).Collection(userCol)
+	one := userCollection.FindOne(context.TODO(), bson.D{{searchKey, searchValue}})
+	if one.Err() != nil {
+		if one.Err() == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var profile utils.UserProfile
+	err := one.Decode(&profile)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get profile"})
+	}
+	return c.JSON(http.StatusOK, profile)
+}
+
+func GetUserByMail() {
+	fmt.Println("Implement me")
+}

@@ -68,6 +68,8 @@ func main() {
 	r.GET("source/token/:id", getSourceTokenByApp)
 	r.PUT("source/token/:id", modifySourceToken)
 	r.DELETE("source/token/:id", deleteSourceToken)
+	//Pull source routing
+	r.POST("source/pull", createPullSource)
 	//Application property routing
 	r.POST("application", createApplication)
 	r.GET("application", getApplicationsByUser)
@@ -136,6 +138,14 @@ func deleteSourceToken(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	tokenCol := cfg.MongoCollection.SourceTokens
 	return resources.DeleteSourceToken(c, client, db, tokenCol)
+}
+
+//TODO test me!!!!
+func createPullSource(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	appCol := cfg.MongoCollection.Applications
+	return resources.CreatePullSource(c, client, db, sourceCol, appCol)
 }
 func createApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

@@ -73,3 +73,15 @@ type UserResourcesStatus struct {
 	UserId               string   `json:"userId" bson:"_id,omitempty"`
 	SharedStoragesWithMe []string `json:"sharedStorageWithMe" bson:"shared_storage_with_me,omitempty"` //StorageIds that other users sharing with me
 }
+
+type PullSourceTask struct {
+	TaskId        string    `json:"taskId" bson:"_id,omitempty"`
+	UserId        string    `json:"userId" bson:"user_id,omitempty"`
+	AppId         string    `json:"appId" bson:"app_id,omitempty"`
+	SourceURI     string    `json:"sourceURI" bson:"source_uri,omitempty"`
+	Interval      int       `json:"interval" bson:"interval,omitempty"`
+	Description   string    `json:"description" bson:"description,omitempty"`
+	LastExecuted  time.Time `json:"lastExecuted" bson:"last_executed,omitempty"`
+	NextExecution time.Time `json:"nextExecution" bson:"next_execution,omitempty"`
+	CreatedAt     time.Time `json:"createdAt" bson:"created_at,omitempty"`
+}

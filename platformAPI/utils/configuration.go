@@ -22,6 +22,7 @@ type Configuration struct {
 	MongoCollection struct {
 		Applications string `json:"applications"`
 		SourceTokens string `json:"sourceTokens"`
+		PullSources  string `json:"pullSources"`
 		Storages     string `json:"storages"`
 		Users        string `json:"users"`
 		URStatus     string `json:"userResourcesStatus"`

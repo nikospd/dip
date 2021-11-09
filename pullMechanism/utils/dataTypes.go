@@ -17,6 +17,7 @@ type PullSourceTask struct {
 	Description   string    `json:"description" bson:"description,omitempty"`
 	LastExecuted  time.Time `json:"lastExecuted" bson:"last_executed,omitempty"`
 	NextExecution time.Time `json:"nextExecution" bson:"next_execution,omitempty"`
+	CreatedAt    time.Time `json:"createdAt" bson:"created_at,omitempty"`
 }
 
 func (t *PullSourceTask) HandleTask(col *mongo.Collection) {

@@ -14,7 +14,6 @@ import (
 )
 
 //TODO: fix loggers
-//TODO: add configuration files
 //TODO: error handling
 
 var client *mongo.Client
@@ -88,7 +87,8 @@ func main() {
 	/*
 		Assign resources to unauthenticated endpoints
 	*/
-	e.POST("/login", userLogin)
+	e.POST("/user/login", userLogin)
+	e.POST("/user/register", userRegister)
 	/*
 		Handle cors policy
 		Normally you should add cors with config and add your domain here.
@@ -112,6 +112,12 @@ func userLogin(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	userCol := cfg.MongoCollection.Users
 	return resources.UserLogin(c, client, mySigningKey, db, userCol)
+}
+func userRegister(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	userCol := cfg.MongoCollection.Users
+	col := client.Database(db).Collection(userCol)
+	return resources.UserRegister(c, col)
 }
 func createSourceToken(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

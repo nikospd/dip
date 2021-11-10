@@ -14,16 +14,14 @@ type SourceTokenClaims struct {
 	ModifiedAt  time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 }
 
-type LoginUserCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	UserId   string `json:"userId" bson:"_id"`
-}
-
-type UserProfile struct {
-	Username string `json:"username" bson:"username,omitempty"`
-	UserId   string `json:"userId" bson:"_id,omitempty"`
-	//	TODO: mail, phone etc.
+type User struct {
+	Username   string    `json:"username" bson:"username,omitempty"`
+	Password   string    `json:"password,omitempty" bson:"password,omitempty"`
+	Email      string    `json:"email" bson:"email,omitempty"`
+	UserId     string    `json:"userId" bson:"_id"`
+	CreatedAt  time.Time `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
+	LastLogin  time.Time `json:"lastLogin" bson:"last_login,omitempty"`
 }
 
 func (s *SourceTokenClaims) PrintTheClaims() {

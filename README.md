@@ -10,7 +10,7 @@ as well.
 
 The platform's functionalities are developed in a micro-services model
 
-![a description](./images/arch_high_level.png "a title")
+![](./images/arch_high_level.png)
 
 ### Push Mechanism
 

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"dev.com/config"
 	"dev.com/utils"
 	"fmt"
+	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,9 +18,17 @@ func main() {
 	fmt.Println("start of the program")
 	rand.Seed(time.Now().UnixNano())
 	/*
-		Connect to MongoDB
+		Read configuration file
 	*/
-	clientOptions := options.Client().ApplyURI("mongodb://test:test@localhost:27017")
+	var cfg config.Configuration
+	config.ReadConf("config.json", &cfg)
+	/*
+		/*
+			Connect to MongoDB
+	*/
+	mongoCred := cfg.MongoCredentials
+	mongoUri := utils.MongoCredentials(mongoCred.User, mongoCred.Password, mongoCred.Host, mongoCred.Port)
+	clientOptions := options.Client().ApplyURI(mongoUri)
 	client, connectionError := mongo.Connect(context.TODO(), clientOptions)
 	if connectionError != nil {
 		log.Fatalln(connectionError)
@@ -27,6 +37,18 @@ func main() {
 	if connectionError != nil {
 		log.Fatalln(connectionError)
 	}
+	/*
+		Connect to RabbitMQ Server
+	*/
+	amqpCred := cfg.AmqpCredentials
+	amqpUri := utils.AmqpCredentials(amqpCred.User, amqpCred.Password, amqpCred.Host, amqpCred.Port)
+	conn, err := amqp.Dial(amqpUri)
+	utils.FailOnError(err, "Failed to connect to RabbitMQ")
+	channel, err := conn.Channel()
+	utils.FailOnError(err, "Failed to open a channel")
+	queue, err := channel.QueueDeclare(
+		cfg.AmqpQueues.IncomingData, true, false, false, false, nil)
+	utils.FailOnError(err, "Failed to declare a queue")
 	/*
 		Get N last tasks shorted by nextExecution and execute them in different goroutines
 		every X seconds
@@ -49,25 +71,11 @@ func main() {
 				/*
 					Actual execute the task
 				*/
-				go v.ExecuteTask()
+				go v.ExecuteTask(channel, queue)
 			}
 		} else {
 			fmt.Println("No remaining tasks")
 		}
 		time.Sleep(time.Duration(searchingTasksInterval) * time.Second)
 	}
-}
-
-func createTasks(numberOfTasks int) []utils.PullSourceTask {
-	var sourceTable []utils.PullSourceTask
-	for i := 0; i < numberOfTasks+0; i++ {
-		interval := rand.Intn(20)
-		//d := time.Duration(interval) * time.Second
-		source := new(utils.PullSourceTask)
-		source.TaskId = fmt.Sprintf("%v", i)
-		source.Interval = interval
-		source.NextExecution = time.Now()
-		sourceTable = append(sourceTable, *source)
-	}
-	return sourceTable
 }

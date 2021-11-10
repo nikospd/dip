@@ -46,6 +46,7 @@ func CreatePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 	//Match and sanitize data
 	pullSource.TaskId = utils.CreateRandomHash(20)
 	pullSource.UserId = userId
+	pullSource.Enabled = true
 	pullSource.CreatedAt = time.Now()
 	pullSource.LastExecuted = time.Time{}
 	pullSource.NextExecution = time.Now()

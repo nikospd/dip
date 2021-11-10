@@ -14,23 +14,18 @@ import (
 
 func (t PullSourceTask) ExecuteTask(channel *amqp.Channel, queue amqp.Queue) {
 	resp, err := http.Get(t.SourceURI)
-	if err != nil {
-		fmt.Println(t.TaskId, err)
-		return
-	}
+	FailOnError(err, t.TaskId)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(t.TaskId, err)
 		return
 	}
-	fmt.Println(t.TaskId, string(body))
 	var msg IncomingMessage
 	json.Unmarshal(body, &msg.Payload)
 	msg.UserId = t.UserId
 	msg.AppId = t.AppId
 	msg.ArrivedAt = time.Now()
-	fmt.Println(msg)
 	msgJs, _ := json.Marshal(msg)
 	err = channel.Publish("", queue.Name, false, false,
 		amqp.Publishing{
@@ -42,11 +37,9 @@ func (t PullSourceTask) ExecuteTask(channel *amqp.Channel, queue amqp.Queue) {
 }
 
 func (t *PullSourceTask) HandleTask(col *mongo.Collection) {
-	timeErr := time.Now().Sub(t.NextExecution).Milliseconds()
 	t.LastExecuted = time.Now()
 	t.NextExecution = time.Now().Add(time.Duration(t.Interval) * time.Minute)
-	t.Description = "Updated!!"
 	updateQuery := bson.D{{"$set", t}}
-	col.UpdateOne(context.TODO(), bson.D{{"_id", t.TaskId}}, updateQuery)
-	fmt.Println("Handle task: ", t.TaskId, " with time error of: ", timeErr)
+	_, err := col.UpdateOne(context.TODO(), bson.D{{"_id", t.TaskId}}, updateQuery)
+	FailOnError(err, t.TaskId)
 }

@@ -10,6 +10,7 @@ type PullSourceTask struct {
 	AppId         string    `json:"appId" bson:"app_id,omitempty"`
 	SourceURI     string    `json:"sourceURI" bson:"source_uri,omitempty"`
 	Interval      int       `json:"interval" bson:"interval,omitempty"`
+	Enabled	bool	`json:"enabled" bson:"enabled,omitempty"`
 	Description   string    `json:"description" bson:"description,omitempty"`
 	LastExecuted  time.Time `json:"lastExecuted" bson:"last_executed,omitempty"`
 	NextExecution time.Time `json:"nextExecution" bson:"next_execution,omitempty"`

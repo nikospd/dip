@@ -57,12 +57,13 @@ func main() {
 	col := client.Database("staging").Collection("pull_sources")
 	var tasks []utils.PullSourceTask
 	for true {
-		cur, err := col.Find(context.TODO(), bson.D{{"next_execution", bson.D{{"$lt", time.Now()}}}})
+		cur, err := col.Find(context.TODO(), bson.D{
+			{"next_execution", bson.D{{"$lt", time.Now()}}},
+			{"enabled", true}})
 		if err != nil {
 			fmt.Println(err)
 		} else if cur.RemainingBatchLength() != 0 {
 			cur.All(context.TODO(), &tasks)
-			fmt.Println("found tasks now execute them")
 			for _, v := range tasks {
 				/*
 					Update next Execution time
@@ -73,8 +74,6 @@ func main() {
 				*/
 				go v.ExecuteTask(channel, queue)
 			}
-		} else {
-			fmt.Println("No remaining tasks")
 		}
 		time.Sleep(time.Duration(searchingTasksInterval) * time.Second)
 	}

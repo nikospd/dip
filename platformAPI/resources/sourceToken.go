@@ -73,12 +73,30 @@ func GetSourceTokenByUser(c echo.Context, client *mongo.Client, db string, token
 	return c.JSON(http.StatusOK, stcTable)
 }
 
+func GetSourceTokenById(c echo.Context, client *mongo.Client, db string, tokenCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	sourceId := c.Param("id")
+	collection := client.Database(db).Collection(tokenCol)
+	one := collection.FindOne(context.TODO(), bson.D{
+		{"_id", sourceId}, {"user_id", userId}})
+	if one.Err() != nil {
+		if one.Err() == mongo.ErrNoDocuments {
+			fmt.Println("not a match!")
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var stc utils.SourceTokenClaims
+	one.Decode(&stc)
+	return c.JSON(http.StatusOK, stc)
+}
+
 func GetSourceTokenByApp(c echo.Context, client *mongo.Client, db string, tokenCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
 	appId := c.Param("id")
-	//TODO: what about shared applications? should the owner be able to see all the source tokens?
 	collection := client.Database(db).Collection(tokenCol)
 	cur, err := collection.Find(context.TODO(), bson.D{
 		{"user_id", userId},

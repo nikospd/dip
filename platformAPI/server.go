@@ -50,6 +50,14 @@ func main() {
 	//e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	/*
+		Swagger
+	*/
+	e.Static("/swagger-ui.css", "swaggerui/swagger-ui.css")
+	e.Static("/swagger-ui-bundle.js", "swaggerui/swagger-ui-bundle.js")
+	e.Static("/swagger-ui-standalone-preset.js", "swaggerui/swagger-ui-standalone-preset.js")
+	e.Static("/swagger.json", "swaggerui/swagger.json")
+	e.Static("/api", "swaggerui/index.html")
+	/*
 		Assign resources to restricted endpoints
 	*/
 	mySigningKey = []byte(cfg.SigningKey)
@@ -72,8 +80,10 @@ func main() {
 	//Application property routing
 	r.POST("application", createApplication)
 	r.GET("application", getApplicationsByUser)
+	r.GET("application/:id", getApplicationById)
 	r.PUT("application/:id", updateApplication)
 	r.DELETE("application/:id", deleteApplication)
+	//TODO: add endpoints to enable/disable raw persistence
 	//Storage property routing
 	r.POST("storage", createStorage)
 	r.GET("storage/:id", getStorage)
@@ -145,8 +155,6 @@ func deleteSourceToken(c echo.Context) error {
 	tokenCol := cfg.MongoCollection.SourceTokens
 	return resources.DeleteSourceToken(c, client, db, tokenCol)
 }
-
-//TODO test me!!!!
 func createPullSource(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	sourceCol := cfg.MongoCollection.PullSources
@@ -163,6 +171,11 @@ func getApplicationsByUser(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	appCol := cfg.MongoCollection.Applications
 	return resources.GetApplicationsByUser(c, client, db, appCol)
+}
+func getApplicationById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	appCol := cfg.MongoCollection.Applications
+	return resources.GetApplicationById(c, client, db, appCol)
 }
 func updateApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

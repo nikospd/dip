@@ -1,0 +1,128 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a swagger documentation for DIP api's endpoints.",
+    "version": "0.1.0",
+    "title": "DIP",
+    "contact": {
+      "email": "nikolaosppd@gmail.com"
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about DIP",
+    "url": "https://github.com/nikospd/dip"
+  },
+  "host": "83.212.19.17:8081",
+  "tags": [
+    {
+      "name": "user",
+      "description": "About user auth and user info"
+    },
+    {
+      "name": "application",
+      "description": "About application resource"
+    },
+    {
+      "name": "source",
+      "description": "About source token and pull"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "paths": {
+    "/user/login": {
+      "post": {
+        "tags": ["user"],
+        "summary": "User login",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Pet object that needs to be added to the store",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {"type": "string"},
+                "password": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "404": {"description": "Not Found"},
+          "200": {
+            "description": "Returns the jwt",
+            "schema": {"type": "object", "properties": {"token": {"type": "string"}}}}
+        }
+      }
+    },
+    "/application": {
+      "post": {
+        "tags": ["application"],
+        "summary": "Creates a new application",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Creates  a new application. At the moment, you first have to create a storage and then attach it here as raw storage. Later, there is gonna be a separate endpoint for that purpose so there will be no need for adding those informations here",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sourceType": {"type": "string", "enum": ["push", "pull"]},
+                "description": {"type": "string"},
+                "persistRaw": {"type": "boolean", "example": false},
+                "rawStorageId": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {"description": "Application Created"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "get": {
+        "tags": ["application"],
+        "summary": "Get all the applications that belongs to the logged in user",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Application"}
+
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "Application": {
+      "type": "object",
+      "properties": {
+        "appId": {"type": "string"},
+        "userId": {"type": "string"},
+        "description": {"type": "string"},
+        "sourceType": {"type": "string", "enum": ["push", "pull"]},
+        "persistRaw": {"type": "boolean", "description": "Choose if you want to save all the raw incoming data"},
+        "rawStorageId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
+      }
+    }
+  }
+}

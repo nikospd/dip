@@ -40,10 +40,10 @@ type Application struct {
 	ModifiedAt   time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 	PersistRaw   bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
 	RawStorageId string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
-	HasDevices   bool      `json:"hasDevices" bson:"has_devices,omitempty"`
 	/*
 		Future purposes: {
-		HasDevices, DevicesIdPath, DataModel, AggregationRecipes, ShareDataWith
+		HasDevices, DevicesIdPath, DataModel, AggregationRecipes
+		AggregationStorages: {AggregationId, StorageId}
 		}
 	*/
 }

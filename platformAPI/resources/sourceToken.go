@@ -44,6 +44,7 @@ func CreateSourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 		}
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create token"})
 	}
+	//TODO check if app is for push source
 	//Add token to the database
 	collection = client.Database(db).Collection(tokenCol)
 	_, err := collection.InsertOne(context.TODO(), stc)

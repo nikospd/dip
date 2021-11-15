@@ -16,7 +16,6 @@ import (
 )
 
 func UserLogin(c echo.Context, client *mongo.Client, signingKey []byte, db string, col string) error {
-	//TODO: Use encryption for passwords
 	collection := client.Database(db).Collection(col)
 	credentials := new(utils.User)
 	if err := c.Bind(credentials); err != nil {

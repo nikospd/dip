@@ -43,6 +43,7 @@ func CreatePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 		}
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create pull source"})
 	}
+	//TODO check if the type of the app is pull
 	//Match and sanitize data
 	pullSource.TaskId = utils.CreateRandomHash(20)
 	pullSource.UserId = userId

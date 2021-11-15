@@ -30,12 +30,10 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 	}
 	app.AppId = utils.CreateRandomHash(20)
 	switch app.SourceType {
-	case "pull":
-		fmt.Println("New push mechanism")
-		app.SourceDetails = ""
 	case "push":
+		fmt.Println("New push mechanism")
+	case "pull":
 		fmt.Println("New pull mechanism")
-		return c.JSON(http.StatusNotImplemented, echo.Map{"msg": "Source type not implemented yet."})
 	default:
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Wrong type source"})
 	}
@@ -115,6 +113,29 @@ func GetApplicationsByUser(c echo.Context, client *mongo.Client, db string, appC
 	userId := claims.Id
 	collection := client.Database(db).Collection(appCol)
 	cur, err := collection.Find(context.TODO(), bson.D{
+		{"user_id", userId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("not a match!")
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var appTable []utils.Application
+	err = cur.All(context.TODO(), &appTable)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Error at getting the applications"})
+	}
+	return c.JSON(http.StatusOK, appTable)
+}
+
+func GetApplicationById(c echo.Context, client *mongo.Client, db string, appCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	appId := c.Param("id")
+	collection := client.Database(db).Collection(appCol)
+	cur, err := collection.Find(context.TODO(), bson.D{
+		{"_id", appId},
 		{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

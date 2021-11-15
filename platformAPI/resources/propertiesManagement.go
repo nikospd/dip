@@ -37,24 +37,8 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 	default:
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Wrong type source"})
 	}
-	if app.PersistRaw {
-		if app.RawStorageId == "" {
-			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "RawStorageId not provided but raw persistence was selected"})
-		}
-		storageCollection := client.Database(db).Collection(storageCol)
-		filter := bson.D{{"_id", app.RawStorageId}, {"user_id", userId}}
-		updateQuery := bson.D{{"$set", bson.D{{"app_id", app.AppId}}}}
-		oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
-		if err != nil {
-			fmt.Println(err)
-			return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
-		}
-		if oneStorage.MatchedCount == 0 {
-			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Storage Id that provided, does not match"})
-		}
-	} else {
-		app.RawStorageId = ""
-	}
+	app.PersistRaw = false
+	app.RawStorageId = ""
 	app.UserId = userId
 	app.CreatedAt = time.Now()
 	collection := client.Database(db).Collection(appCol)
@@ -62,7 +46,7 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create resource"})
 	}
-	return c.JSON(http.StatusCreated, echo.Map{"msg": "Application created"})
+	return c.JSON(http.StatusCreated, echo.Map{"id": app.AppId, "msg": "Application created"})
 }
 
 func UpdateApplication(c echo.Context, client *mongo.Client, db string, appCol string) error {
@@ -190,6 +174,9 @@ func CreateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	//Init data
 	storage.StorageId = utils.CreateRandomHash(20)
 	storage.UserId = userId
+	storage.AppId = ""
+	storage.Shared = false
+	storage.SharedWithId = []string{}
 	storage.CreatedAt = time.Now()
 	storage.SharedWithId = []string{}
 	collection := client.Database(db).Collection(storageCol)
@@ -200,7 +187,7 @@ func CreateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	return c.JSON(http.StatusCreated, echo.Map{"msg": "Storage created", "id": storage.StorageId})
 }
 
-func GetStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+func GetStorageById(c echo.Context, client *mongo.Client, db string, storageCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
@@ -403,10 +390,96 @@ func UnshareStorage(c echo.Context, client *mongo.Client, db string, storageCol 
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
 }
 
-func AddStorageToApplication(c echo.Context, client *mongo.Client) error {
-	return nil
+/*
+	At the moment, only raw storage is supported. At the future with his endpoint the user should
+	be able to attach storage for other integrations as well (with recipeId or something) and
+	this function should be refactored
+*/
+func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol string, appCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	body := echo.Map{}
+	err := c.Bind(&body)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if body["appId"] == nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "AppId not provided"})
+	}
+	//Check if storage belongs to the user and update the AppId
+	storageCollection := client.Database(db).Collection(storageCol)
+	filter := bson.D{{"_id", storageId}, {"user_id", userId}}
+	updateQuery := bson.D{{"$set", bson.D{{"app_id", body["appId"]},
+		{"modified_at", time.Now()}}}}
+	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if oneStorage.MatchedCount == 0 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Storage Id that provided, does not belong to the user"})
+	}
+	//Now update the app with the new storage id for raw persistence
+	appCollection := client.Database(db).Collection(appCol)
+	filter = bson.D{{"_id", body["appId"]}, {"user_id", userId}}
+	updateQuery = bson.D{{"$set", bson.D{{"persist_raw", true},
+		{"raw_storage_id", storageId}, {"modified_at", time.Now()}}}}
+	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if oneApp.MatchedCount == 0 {
+		//Reset app in storage because this app does not belong to the user
+		filter = bson.D{{"_id", storageId}, {"user_id", userId}}
+		updateQuery = bson.D{{"$set", bson.D{{"app_id", ""}}}}
+		storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "App Id that provided, does not belong to the user"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "Storage successfully attached to the app"})
 }
 
-func RemoveStorageFromApplication(c echo.Context, client *mongo.Client) error {
-	return nil
+func DetachStorage(c echo.Context, client *mongo.Client, db string, storageCol string, appCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	storageId := c.Param("id")
+	body := echo.Map{}
+	err := c.Bind(&body)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if body["appId"] == nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "AppId not provided"})
+	}
+	//Check if storage belongs to the user and update the AppId
+	storageCollection := client.Database(db).Collection(storageCol)
+	filter := bson.D{{"_id", storageId}, {"user_id", userId}}
+	updateQuery := bson.D{{"$set", bson.D{{"app_id", ""},
+		{"modified_at", time.Now()}}}}
+	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if oneStorage.MatchedCount == 0 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Storage Id that provided, does not belong to the user"})
+	}
+	//Now update the app with the new storage id for raw persistence
+	appCollection := client.Database(db).Collection(appCol)
+	filter = bson.D{{"_id", body["appId"]}, {"user_id", userId}}
+	updateQuery = bson.D{{"$set", bson.D{{"persist_raw", false},
+		{"raw_storage_id", ""}, {"modified_at", time.Now()}}}}
+	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	if oneApp.MatchedCount == 0 {
+		//Reset app in storage because this app does not belong to the user
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "App Id that provided, does not belong to the user"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "Storage successfully detached from the app"})
 }

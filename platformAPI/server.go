@@ -71,8 +71,9 @@ func main() {
 	r.GET("user/profile", getUser)
 	//SourceToken routing
 	r.POST("source/token", createSourceToken)
-	r.GET("source/token", getSourceTokenByUser)
-	r.GET("source/token/:id", getSourceTokenByApp)
+	r.GET("source/tokens", getSourceTokenByUser)
+	r.GET("source/token/:id", getSourceTokenById)
+	r.GET("source/tokens/:id", getSourceTokenByApp)
 	r.PUT("source/token/:id", modifySourceToken)
 	r.DELETE("source/token/:id", deleteSourceToken)
 	//Pull source routing
@@ -83,15 +84,16 @@ func main() {
 	r.GET("application/:id", getApplicationById)
 	r.PUT("application/:id", updateApplication)
 	r.DELETE("application/:id", deleteApplication)
-	//TODO: add endpoints to enable/disable raw persistence
 	//Storage property routing
 	r.POST("storage", createStorage)
-	r.GET("storage/:id", getStorage)
+	r.GET("storage/:id", getStorageById)
 	r.GET("storages/:id", getStorageByApp)
 	r.PUT("storage/:id", updateStorage)
 	r.DELETE("storage/:id", deleteStorage)
 	r.POST("storage/share/:id", shareStorage)
 	r.POST("storage/unshare/:id", unshareStorage)
+	r.POST("storage/attach/:id", attachStorage)
+	r.POST("storage/detach/:id", detachStorage)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -139,6 +141,11 @@ func getSourceTokenByUser(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	tokenCol := cfg.MongoCollection.SourceTokens
 	return resources.GetSourceTokenByUser(c, client, db, tokenCol)
+}
+func getSourceTokenById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	tokenCol := cfg.MongoCollection.SourceTokens
+	return resources.GetSourceTokenById(c, client, db, tokenCol)
 }
 func getSourceTokenByApp(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
@@ -197,10 +204,10 @@ func getStorageByApp(c echo.Context) error {
 	storageCol := cfg.MongoCollection.Storages
 	return resources.GetStoragesByApp(c, client, db, storageCol)
 }
-func getStorage(c echo.Context) error {
+func getStorageById(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	storageCol := cfg.MongoCollection.Storages
-	return resources.GetStorage(c, client, db, storageCol)
+	return resources.GetStorageById(c, client, db, storageCol)
 }
 func updateStorage(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
@@ -223,6 +230,18 @@ func unshareStorage(c echo.Context) error {
 	storageCol := cfg.MongoCollection.Storages
 	ursCol := cfg.MongoCollection.URStatus
 	return resources.UnshareStorage(c, client, db, storageCol, ursCol)
+}
+func attachStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	appCol := cfg.MongoCollection.Applications
+	return resources.AttachStorage(c, client, db, storageCol, appCol)
+}
+func detachStorage(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	appCol := cfg.MongoCollection.Applications
+	return resources.DetachStorage(c, client, db, storageCol, appCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

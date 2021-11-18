@@ -45,23 +45,26 @@ func UserLogin(c echo.Context, client *mongo.Client, signingKey []byte, db strin
 	if err != nil {
 		return err
 	}
+	//Update last login time
+	collection.UpdateOne(context.TODO(), bson.D{{"_id", user.UserId}},
+		bson.D{{"$set", bson.D{{"last_login", time.Now()}}}})
 	return c.JSON(http.StatusOK, echo.Map{"token": t})
 }
 
-func UserRegister(c echo.Context, col *mongo.Collection) error{
+func UserRegister(c echo.Context, col *mongo.Collection) error {
 	user := new(utils.User)
 	err := c.Bind(user)
-	if err != nil{
+	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get the user at register"})
 	}
 	//Check the input params
-	if user.Username == ""{
+	if user.Username == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Username not provided"})
 	}
-	if user.Password == ""{
+	if user.Password == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Password not provided"})
 	}
-	if user.Email == ""{
+	if user.Email == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Email not provided"})
 	}
 	user.UserId = utils.CreateRandomHash(20)
@@ -96,12 +99,12 @@ func GetUser(c echo.Context, client *mongo.Client, db string, userCol string) er
 	if username != "" {
 		searchValue = username
 		searchKey = "username"
-	} else if email!=""{
+	} else if email != "" {
 		searchValue = email
 		searchKey = "email"
 	}
 	userCollection := client.Database(db).Collection(userCol)
-	opt:=options.FindOne()
+	opt := options.FindOne()
 	opt.Projection = bson.D{{"password", 0}}
 	one := userCollection.FindOne(context.TODO(),
 		bson.D{{searchKey, searchValue}}, opt)

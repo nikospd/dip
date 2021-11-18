@@ -88,6 +88,7 @@ func main() {
 	r.POST("storage", createStorage)
 	r.GET("storage/:id", getStorageById)
 	r.GET("storages/:id", getStorageByApp)
+	r.GET("storage", getStoragesByUser)
 	r.PUT("storage/:id", updateStorage)
 	r.DELETE("storage/:id", deleteStorage)
 	r.POST("storage/share/:id", shareStorage)
@@ -203,6 +204,11 @@ func getStorageByApp(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	storageCol := cfg.MongoCollection.Storages
 	return resources.GetStoragesByApp(c, client, db, storageCol)
+}
+func getStoragesByUser(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	storageCol := cfg.MongoCollection.Storages
+	return resources.GetStoragesByUser(c, client, db, storageCol)
 }
 func getStorageById(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

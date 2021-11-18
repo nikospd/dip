@@ -50,7 +50,7 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 }
 
 func UpdateApplication(c echo.Context, client *mongo.Client, db string, appCol string) error {
-	//Request body has "description & persistRaw"
+	//Request body has "description"
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
@@ -66,6 +66,8 @@ func UpdateApplication(c echo.Context, client *mongo.Client, db string, appCol s
 	app.UserId = ""
 	app.CreatedAt = time.Time{}
 	app.ModifiedAt = time.Now()
+	app.PersistRaw = false
+	app.RawStorageId = ""
 	//Create update query
 	var updateFields bson.D
 	tmpFields, _ := bson.Marshal(app)
@@ -235,6 +237,27 @@ func GetStoragesByApp(c echo.Context, client *mongo.Client, db string, storageCo
 	return c.JSON(http.StatusOK, storageTable)
 }
 
+func GetStoragesByUser(c echo.Context, client *mongo.Client, db string, storageCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+
+	collection := client.Database(db).Collection(storageCol)
+	cur, err := collection.Find(context.TODO(), bson.D{{"user_id", userId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("not a match!")
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var storageTable []utils.Storage
+	err = cur.All(context.TODO(), &storageTable)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Error at getting the storages"})
+	}
+	return c.JSON(http.StatusOK, storageTable)
+}
+
 func UpdateStorage(c echo.Context, client *mongo.Client, db string, storageCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
@@ -252,6 +275,7 @@ func UpdateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	storage.CreatedAt = time.Time{}
 	storage.ModifiedAt = time.Now()
 	storage.SharedWithId = []string{}
+	storage.Shared = false
 	storage.Type = ""
 	//Create update query
 	var updateFields bson.D

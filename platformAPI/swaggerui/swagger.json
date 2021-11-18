@@ -12,7 +12,7 @@
     "description": "Find out more about DIP",
     "url": "https://github.com/nikospd/dip"
   },
-  "host": "83.212.19.17:8081",
+  "host": "localhost:1323",
   "tags": [
     {
       "name": "user",
@@ -23,8 +23,8 @@
       "description": "About application resource"
     },
     {
-      "name": "source",
-      "description": "About source token and pull"
+      "name": "storage",
+      "description": "About storage management"
     }
   ],
   "schemes": [
@@ -40,7 +40,7 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Pet object that needs to be added to the store",
+            "description": "",
             "required": true,
             "schema": {
               "type": "object",
@@ -59,6 +59,69 @@
         }
       }
     },
+    "/user/register": {
+      "post": {
+        "tags": ["user"],
+        "summary": "User registration endpoint",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {"type": "string"},
+                "password": {"type": "string"},
+                "email": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400":{
+            "description": "Bad Request",
+            "schema": {"type": "object", "properties": {"msg": {"type": "string", "example": "Username or email already exist"}}}
+          },
+          "200": {
+            "description": "OK",
+            "schema": {"type": "object", "properties": {"token": {"type": "string"}}}
+          }
+        }
+      }
+    },
+    "/user/profile": {
+      "get": {
+        "tags": ["user"],
+        "security": [{"Bearer": []}],
+        "summary": "Endpoint with purpose of searching user's profile by username or email",
+        "description": "If none of the name or email are provided, the endpoint reurns the profile of the logged in user",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "email",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "404": {"description": "Not Found"},
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/User"}
+
+            }
+          }
+        }
+      }
+    },
     "/application": {
       "post": {
         "tags": ["application"],
@@ -67,27 +130,28 @@
           {
             "in": "body",
             "name": "body",
-            "description": "Creates  a new application. At the moment, you first have to create a storage and then attach it here as raw storage. Later, there is gonna be a separate endpoint for that purpose so there will be no need for adding those informations here",
+            "description": "Creates  a new application. You only provide a source type and a description. After that you attach resources (storage, sources etc) by separate endpoints",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "sourceType": {"type": "string", "enum": ["push", "pull"]},
-                "description": {"type": "string"},
-                "persistRaw": {"type": "boolean", "example": false},
-                "rawStorageId": {"type": "string"}
+                "description": {"type": "string"}
               }
             }
           }
         ],
         "responses": {
-          "201": {"description": "Application Created"}
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
         },
         "security": [{"Bearer": []}]
       },
       "get": {
         "tags": ["application"],
-        "summary": "Get all the applications that belongs to the logged in user",
+        "summary": "Get apps by user. Get all the applications that belongs to the logged in user",
         "responses": {
           "200": {
             "description": "",
@@ -100,6 +164,176 @@
         },
         "security": [{"Bearer": []}]
 
+      }
+    },
+    "/application/{appId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "appId",
+          "type": "string",
+          "required": true,
+          "description": "Unique appId to search for"
+        }
+      ],
+      "get": {
+        "tags": ["application"],
+        "summary": "Get app by id",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {"$ref": "#/definitions/Application"}
+          }
+        },
+        "security": [{"Bearer": []}]
+
+      },
+      "put": {
+        "tags": ["application"],
+        "summary": "Updates the application's description",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "description",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete": {
+        "tags": ["application"],
+        "summary": "Deletes an application with the given appId",
+        "responses": {
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+
+      }
+    },
+    "/storage":{
+      "post": {
+        "tags": ["storage"],
+        "summary": "Creates a new storage",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Creates  a new storage. You only provide a source type and a description. At the moment, only cloudMongo type is supported. This type is a pre installed mongoDB instance at server side",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string", "enum": ["cloudMongo", "proprietaryMongo"]},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "get": {
+        "tags": ["storage"],
+        "summary": "Get all storages that belongs to the logged in user",
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Storage"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/storage/{storageId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "storageId",
+          "type": "string",
+          "required": true,
+          "description": "Unique storageId to search for"
+        }
+      ],
+      "get": {
+        "tags": ["storage"],
+        "summary": "Get storage by id.",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {"$ref": "#/definitions/Storage"}
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "put": {
+        "tags": ["storage"],
+        "summary": "Updates the storage's description",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "description",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete": {
+        "tags": ["storage"],
+        "summary": "Deletes a storage with the given storageId",
+        "responses": {
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+
+      }
+    },
+    "/storages/{appId}":{
+      "parameters": [
+        {
+          "in": "path",
+          "name": "appId",
+          "type": "string",
+          "required": true,
+          "description": "Unique appId to search for"
+        }
+      ],
+      "get": {
+        "tags": ["storage"],
+        "summary": "Get storages by app.",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Storage"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
       }
     }
   },
@@ -120,6 +354,30 @@
         "sourceType": {"type": "string", "enum": ["push", "pull"]},
         "persistRaw": {"type": "boolean", "description": "Choose if you want to save all the raw incoming data"},
         "rawStorageId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
+      }
+    },
+    "User":{
+      "type": "object",
+      "properties": {
+        "username": {"type": "string"},
+        "email": {"type": "string"},
+        "userId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"},
+        "lastLogin": {"type": "string"}
+      }
+    },
+    "Storage":{
+      "type": "object",
+      "properties": {
+        "storageId": {"type": "string"},
+        "userId": {"type": "string"},
+        "type": {"type": "string"},
+        "shared": {"type": "boolean"},
+        "sharedWithId": {"type": "array", "items": {"type": "string"}},
+        "description": {"type": "string"},
         "createdAt": {"type": "string"},
         "modifiedAt": {"type": "string"}
       }

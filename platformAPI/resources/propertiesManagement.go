@@ -432,12 +432,24 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	if body["appId"] == nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "AppId not provided"})
 	}
+	storageUpdateQuery := bson.D{}
+	appUpdateQuery := bson.D{}
+	switch body["scope"] {
+	case nil:
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "scope not provided"})
+	case "rawPersistence":
+		fmt.Println("raw")
+		storageUpdateQuery = bson.D{{"$set", bson.D{{"app_id", body["appId"]},
+			{"modified_at", time.Now()}}}}
+		appUpdateQuery = bson.D{{"$set", bson.D{{"persist_raw", true},
+			{"raw_storage_id", storageId}, {"modified_at", time.Now()}}}}
+	default:
+		return c.JSON(http.StatusNotImplemented, echo.Map{"msg": "scope not implemented yet"})
+	}
 	//Check if storage belongs to the user and update the AppId
 	storageCollection := client.Database(db).Collection(storageCol)
 	filter := bson.D{{"_id", storageId}, {"user_id", userId}}
-	updateQuery := bson.D{{"$set", bson.D{{"app_id", body["appId"]},
-		{"modified_at", time.Now()}}}}
-	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, storageUpdateQuery)
 	if err != nil {
 		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
@@ -448,9 +460,7 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	//Now update the app with the new storage id for raw persistence
 	appCollection := client.Database(db).Collection(appCol)
 	filter = bson.D{{"_id", body["appId"]}, {"user_id", userId}}
-	updateQuery = bson.D{{"$set", bson.D{{"persist_raw", true},
-		{"raw_storage_id", storageId}, {"modified_at", time.Now()}}}}
-	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, appUpdateQuery)
 	if err != nil {
 		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
@@ -458,7 +468,7 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	if oneApp.MatchedCount == 0 {
 		//Reset app in storage because this app does not belong to the user
 		filter = bson.D{{"_id", storageId}, {"user_id", userId}}
-		updateQuery = bson.D{{"$set", bson.D{{"app_id", ""}}}}
+		updateQuery := bson.D{{"$set", bson.D{{"app_id", ""}}}}
 		storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "App Id that provided, does not belong to the user"})
 	}

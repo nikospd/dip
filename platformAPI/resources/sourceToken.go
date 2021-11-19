@@ -14,7 +14,6 @@ import (
 )
 
 // TODO: check for missing variables
-// TODO: should we have support the option for shared source tokens?
 
 func CreateSourceToken(c echo.Context, client *mongo.Client, db string, tokenCol string, appCol string) error {
 	user := c.Get("user").(*jwt.Token)

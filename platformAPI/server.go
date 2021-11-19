@@ -88,7 +88,7 @@ func main() {
 	r.POST("storage", createStorage)
 	r.GET("storage/:id", getStorageById)
 	r.GET("storages/:id", getStorageByApp)
-	r.GET("storage", getStoragesByUser)
+	r.GET("storages", getStoragesByUser)
 	r.PUT("storage/:id", updateStorage)
 	r.DELETE("storage/:id", deleteStorage)
 	r.POST("storage/share/:id", shareStorage)

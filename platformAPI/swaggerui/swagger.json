@@ -12,7 +12,7 @@
     "description": "Find out more about DIP",
     "url": "https://github.com/nikospd/dip"
   },
-  "host": "localhost:1323",
+  "host": "83.212.19.17:8081",
   "tags": [
     {
       "name": "user",

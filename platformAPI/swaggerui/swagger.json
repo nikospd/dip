@@ -96,7 +96,7 @@
         "tags": ["user"],
         "security": [{"Bearer": []}],
         "summary": "Endpoint with purpose of searching user's profile by username or email",
-        "description": "If none of the name or email are provided, the endpoint reurns the profile of the logged in user",
+        "description": "If none of the name / email are provided, the endpoint reurns the profile of the logged in user",
         "parameters": [
           {
             "in": "query",
@@ -244,20 +244,6 @@
           }
         },
         "security": [{"Bearer": []}]
-      },
-      "get": {
-        "tags": ["storage"],
-        "summary": "Get all storages that belongs to the logged in user",
-        "responses": {
-          "201": {
-            "description": "",
-            "schema": {
-              "type": "array",
-              "items": {"$ref": "#/definitions/Storage"}
-            }
-          }
-        },
-        "security": [{"Bearer": []}]
       }
     },
     "/storage/{storageId}": {
@@ -311,6 +297,22 @@
 
       }
     },
+    "/storages": {
+      "get": {
+        "tags": ["storage"],
+        "summary": "Get all storages that belongs to the logged in user",
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Storage"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
     "/storages/{appId}":{
       "parameters": [
         {
@@ -334,6 +336,123 @@
           }
         },
         "security": [{"Bearer": []}]
+      }
+    },
+    "/storage/share/{storageId}":{
+      "parameters": [
+        {
+          "in": "path",
+          "name": "storageId",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "in": "body",
+          "name": "",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "targetId": {"type": "string", "description": "dsa"}
+            }
+          }
+        }
+      ],
+      "post":{
+        "tags": ["storage"],
+        "summary": "Share a storage with another user using the userId",
+        "responses": {
+          "200": {"description": "OK"},
+          "404": {"description": "Storage not found or already shared with target"}
+        }
+      }
+    },
+    "/storage/unshare/{storageId}":{
+      "parameters": [
+        {
+          "in": "path",
+          "name": "storageId",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "in": "body",
+          "name": "",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "targetId": {"type": "string", "description": "dsa"}
+            }
+          }
+        }
+      ],
+      "post":{
+        "tags": ["storage"],
+        "summary": "Unshare a storage with another user using the userId",
+        "responses": {
+          "200": {"description": "OK"},
+          "404": {"description": "Storage not found or not sharing with target"}
+        }
+      }
+    },
+    "/storage/attach/{storageId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "storageId",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "in": "body",
+          "name": "",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "appId": {"type": "string"},
+              "scope": {"type": "string", "example": "rawPersistence"}
+            }
+          }
+        }
+      ],
+      "post":{
+        "summary": "Attach a storage to an app for raw persistence. Later, different scopes should be supported like aggregated persistence for an aggregation recipe",
+        "tags": ["storage"],
+        "responses":{
+          "400": {"description": "app or storage does not belong to the user"},
+          "200": {"description": "Storage successfully attached to the app"}
+        }
+      }
+    },
+    "/storage/detach/{storageId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "storageId",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "in": "body",
+          "name": "",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "appId": {"type": "string"}
+            }
+          }
+        }
+      ],
+      "post":{
+        "summary": "Detach a storage from an app for raw persistence. Later, different scopes should be supported like aggregated persistence for an aggregation recipe",
+        "tags": ["storage"],
+        "responses":{
+          "400": {"description": "app or storage does not belong to the user"},
+          "200": {"description": "Storage successfully detached from the app"}
+        }
       }
     }
   },

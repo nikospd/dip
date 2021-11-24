@@ -1,0 +1,98 @@
+version: '2.4'
+
+services:
+  prod-mongodb:
+    image: mongo:latest
+    container_name: prod-mongodb
+    restart: always
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo prod-mongodb:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    ports:
+      - 27017:27017
+    volumes:
+      - /etc/dip/srv/prod/vc_mongodb:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - prod-mongodb
+
+  prod-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: prod-rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - prod-rabbitmq
+
+  prod-platformapi:
+    build:
+      context: ./platformAPI
+      dockerfile: Dockerfile
+    container_name: prod-platformapi
+    image: dip-platformapi-img:latest
+    restart: always
+    ports:
+      - 1323:1323
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+    networks:
+      - prod-platformapi
+
+  prod-firstpersistence:
+    build:
+      context: ./firstPersistence
+      dockerfile: Dockerfile
+    container_name: prod-firstpersistence
+    image: dip-firstpersistence-img:latest
+    restart: always
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+      prod-rabbitmq:
+        condition: service_healthy
+    networks:
+      - prod-firstpersistence
+
+  prod-dataentryapi:
+    build:
+      context: ./dataEntryAPI
+      dockerfile: Dockerfile
+    container_name: prod-dataentryapi
+    image: dip-dataentryapi-img:latest
+    restart: always
+    ports:
+      - 1324:1324
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+      prod-rabbitmq:
+        condition: service_healthy
+    networks:
+      - prod-dataentryapi
+
+networks:
+  prod-mongodb:
+    name: prod-dip
+  prod-rabbitmq:
+    name: prod-dip
+  prod-platformapi:
+    name: prod-dip
+  prod-firstpersistence:
+    name: prod-dip
+  prod-dataentryapi:
+    name: prod-dip

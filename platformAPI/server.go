@@ -77,6 +77,7 @@ func main() {
 	r.PUT("source/token/:id", modifySourceToken)
 	r.DELETE("source/token/:id", deleteSourceToken)
 	//Pull source routing
+	//TODO: enable/disable/get/put/delete
 	r.POST("source/pull", createPullSource)
 	//Application property routing
 	r.POST("application", createApplication)

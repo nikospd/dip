@@ -25,6 +25,18 @@
     {
       "name": "storage",
       "description": "About storage management"
+    },
+    {
+      "name": "source token",
+      "description": "About source token management. For push mechanism"
+    },
+    {
+      "name": "pull source",
+      "description": "About pull source management. For pull mechanism"
+    },
+    {
+      "name": "data",
+      "description": "About data payloads"
     }
   ],
   "schemes": [
@@ -454,7 +466,160 @@
           "200": {"description": "Storage successfully detached from the app"}
         }
       }
+    },
+    "/source/token": {
+      "post":{
+        "summary": "Creates a new source token for the push mechanism",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "appId": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "tags": ["source token"],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        }
+      }
+    },
+    "/source/token/{tokenId}":{
+      "parameters": [
+        {
+          "in": "path",
+          "name": "tokenId",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "get":{
+        "summary": "get token by id",
+        "tags": ["source token"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema": {"$ref": "#/definitions/SourceToken"}
+          }
+        }
+      },
+      "put":{
+        "summary": "update token's description",
+        "tags": ["source token"],
+        "parameters": [{
+          "in": "body",
+          "name": "description",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "description": {"type": "string"}
+            }
+          }
+        }],
+        "responses": {"200": {"description": "OK"}}
+      },
+      "delete":{
+        "summary": "update token's description",
+        "tags": ["source token"],
+        "responses": {"200": {"description": "OK"}}
+      }
+    },
+    "/source/tokens":{
+      "get":{
+        "summary": "get tokens by user",
+        "tags": ["source token"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/SourceToken"}
+            }
+          }
+        }
+      }
+    },
+    "/source/tokens/{appId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "appId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get tokens by app",
+        "tags": ["source token"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/SourceToken"}
+            }
+          }
+        }
+      }
+    },
+    "/source/pull": {
+      "post":{
+        "summary": "Creates a new pull source as a task for the push mechanism. ",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "appId": {"type": "string"},
+                "sourceURI": {"type": "string"},
+                "interval": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "tags": ["pull source"],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        }
+      }
+    },
+    "/storage/data/{storageId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "storageId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get data payloads from a storage",
+        "tags": ["data"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/Data"}
+            }
+          }
+        }
+      }
     }
+
   },
   "securityDefinitions": {
     "Bearer": {
@@ -499,6 +664,26 @@
         "description": {"type": "string"},
         "createdAt": {"type": "string"},
         "modifiedAt": {"type": "string"}
+      }
+    },
+    "SourceToken":{
+      "type": "object",
+      "properties": {
+        "sourceToken": {"type": "string"},
+        "userId": {"type": "string"},
+        "appId": {"type": "string"},
+        "description": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
+      }
+    },
+    "Data":{
+      "type": "object",
+      "properties": {
+        "payload": {"type": "object"},
+        "user_id": {"type": "string"},
+        "app_id": {"type": "string"},
+        "arrived_at": {"type": "string"}
       }
     }
   }

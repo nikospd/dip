@@ -56,5 +56,5 @@ func CreatePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create pull source"})
 	}
-	return c.JSON(http.StatusCreated, echo.Map{"msg": "OK"})
+	return c.JSON(http.StatusCreated, echo.Map{"msg": "OK", "id": pullSource.TaskId})
 }

@@ -50,7 +50,7 @@ func CreateSourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create token"})
 	}
-	return c.JSON(http.StatusCreated, echo.Map{"msg": "OK"})
+	return c.JSON(http.StatusCreated, echo.Map{"msg": "OK", "id": stc.SourceToken})
 }
 
 func GetSourceTokenByUser(c echo.Context, client *mongo.Client, db string, tokenCol string) error {

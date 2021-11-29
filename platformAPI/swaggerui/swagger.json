@@ -5,14 +5,14 @@
     "version": "0.1.0",
     "title": "DIP",
     "contact": {
-      "email": "nikolaosppd@gmail.com"
+      "email": "nikolaosppd@g mail.com"
     }
   },
   "externalDocs": {
     "description": "Find out more about DIP",
     "url": "https://github.com/nikospd/dip"
   },
-  "host": "83.212.19.17:8081",
+  "host": "localhost:1323",
   "tags": [
     {
       "name": "user",
@@ -361,7 +361,7 @@
         },
         {
           "in": "body",
-          "name": "",
+          "name": "body",
           "schema": {
             "type": "object",
             "properties": {
@@ -376,7 +376,8 @@
         "responses": {
           "200": {"description": "OK"},
           "404": {"description": "Storage not found or already shared with target"}
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/storage/unshare/{storageId}":{
@@ -390,7 +391,7 @@
         },
         {
           "in": "body",
-          "name": "",
+          "name": "body",
           "schema": {
             "type": "object",
             "properties": {
@@ -405,7 +406,8 @@
         "responses": {
           "200": {"description": "OK"},
           "404": {"description": "Storage not found or not sharing with target"}
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/storage/attach/{storageId}": {
@@ -419,7 +421,7 @@
         },
         {
           "in": "body",
-          "name": "",
+          "name": "body",
           "schema": {
             "type": "object",
             "properties": {
@@ -435,7 +437,8 @@
         "responses":{
           "400": {"description": "app or storage does not belong to the user"},
           "200": {"description": "Storage successfully attached to the app"}
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/storage/detach/{storageId}": {
@@ -449,7 +452,7 @@
         },
         {
           "in": "body",
-          "name": "",
+          "name": "body",
           "schema": {
             "type": "object",
             "properties": {
@@ -464,7 +467,8 @@
         "responses":{
           "400": {"description": "app or storage does not belong to the user"},
           "200": {"description": "Storage successfully detached from the app"}
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/source/token": {
@@ -473,7 +477,7 @@
         "parameters": [
           {
             "in": "body",
-            "name": "",
+            "name": "body",
             "schema": {
               "type": "object",
               "properties": {
@@ -489,7 +493,8 @@
             "description": "",
             "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/source/token/{tokenId}":{
@@ -510,7 +515,8 @@
             "description": "",
             "schema": {"$ref": "#/definitions/SourceToken"}
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       },
       "put":{
         "summary": "update token's description",
@@ -525,12 +531,14 @@
             }
           }
         }],
-        "responses": {"200": {"description": "OK"}}
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"Bearer": []}]
       },
       "delete":{
         "summary": "update token's description",
         "tags": ["source token"],
-        "responses": {"200": {"description": "OK"}}
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"Bearer": []}]
       }
     },
     "/source/tokens":{
@@ -545,7 +553,8 @@
               "items": {"$ref": "#/definitions/SourceToken"}
             }
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/source/tokens/{appId}":{
@@ -567,7 +576,8 @@
               "items": {"$ref": "#/definitions/SourceToken"}
             }
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/source/pull": {
@@ -576,13 +586,13 @@
         "parameters": [
           {
             "in": "body",
-            "name": "",
+            "name": "body",
             "schema": {
               "type": "object",
               "properties": {
                 "appId": {"type": "string"},
                 "sourceURI": {"type": "string"},
-                "interval": {"type": "string"},
+                "interval": {"type": "integer"},
                 "description": {"type": "string"}
               }
             }
@@ -594,7 +604,8 @@
             "description": "",
             "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/storage/data/{storageId}":{
@@ -616,7 +627,8 @@
               "items": {"$ref": "#/definitions/Data"}
             }
           }
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     }
 

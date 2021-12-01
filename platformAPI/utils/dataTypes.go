@@ -81,5 +81,6 @@ type PullSourceTask struct {
 	Description   string    `json:"description" bson:"description,omitempty"`
 	LastExecuted  time.Time `json:"lastExecuted" bson:"last_executed,omitempty"`
 	NextExecution time.Time `json:"nextExecution" bson:"next_execution,omitempty"`
+	ModifiedAt    time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 	CreatedAt     time.Time `json:"createdAt" bson:"created_at,omitempty"`
 }

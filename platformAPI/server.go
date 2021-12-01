@@ -77,8 +77,15 @@ func main() {
 	r.PUT("source/token/:id", modifySourceToken)
 	r.DELETE("source/token/:id", deleteSourceToken)
 	//Pull source routing
-	//TODO: enable/disable/get/put/delete
+	//TODO: get/put/delete
 	r.POST("source/pull", createPullSource)
+	r.GET("source/pull/:id", getPullSourceById)
+	r.PUT("source/pull/:id", updatePullSource)
+	r.DELETE("source/pull/:id", deletePullSource)
+	r.GET("sources/pull", getPullSourceByUser)
+	r.GET("sources/pull/:id", getPullSourceByApp)
+	r.PUT("source/pull/enable/:id", enablePullSource)
+	r.PUT("source/pull/disable/:id", disablePullSource)
 	//Application property routing
 	r.POST("application", createApplication)
 	r.GET("application", getApplicationsByUser)
@@ -169,6 +176,41 @@ func createPullSource(c echo.Context) error {
 	sourceCol := cfg.MongoCollection.PullSources
 	appCol := cfg.MongoCollection.Applications
 	return resources.CreatePullSource(c, client, db, sourceCol, appCol)
+}
+func enablePullSource(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.EnablePullSource(c, client, db, sourceCol, true)
+}
+func disablePullSource(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.EnablePullSource(c, client, db, sourceCol, false)
+}
+func getPullSourceById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.GetPullSourceById(c, client, db, sourceCol)
+}
+func getPullSourceByApp(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.GetPullSourceByApp(c, client, db, sourceCol)
+}
+func getPullSourceByUser(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.GetPullSourceByUser(c, client, db, sourceCol)
+}
+func updatePullSource(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.UpdatePullSource(c, client, db, sourceCol)
+}
+func deletePullSource(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	sourceCol := cfg.MongoCollection.PullSources
+	return resources.DeletePullSource(c, client, db, sourceCol)
 }
 func createApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

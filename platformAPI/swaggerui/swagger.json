@@ -5,7 +5,7 @@
     "version": "0.1.0",
     "title": "DIP",
     "contact": {
-      "email": "nikolaosppd@g mail.com"
+      "email": "nikolaosppd@gmail.com"
     }
   },
   "externalDocs": {
@@ -608,6 +608,117 @@
         "security": [{"Bearer": []}]
       }
     },
+    "/source/pull/{sourceId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "sourceId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get pull source by its Id",
+        "tags": ["pull source"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "$ref": "#/definitions/Pull_Source"
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "put":{
+        "parameters":[{
+          "in": "body",
+          "name": "body",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "description": {"type": "string"},
+              "sourceURI": {"type": "string"},
+              "interval": {"type": "integer"}
+            }
+          }
+        }],
+        "summary": "Updates description, sourceURI and interval",
+        "tags": ["pull source"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete":{
+        "summary": "Deletes a source by its id",
+        "tags": ["pull source"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/sources/pull/{appId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "appId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get pull sources by App",
+        "tags": ["pull source"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/Pull_Source"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/source/pull/enable/{sourceId}": {
+      "put":{
+        "summary": "Enables a pull source. ",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          }
+        ],
+        "tags": ["pull source"],
+        "responses": {
+          "201": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/source/pull/disable/{sourceId}": {
+      "put":{
+        "summary": "Disables a pull source. ",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          }
+        ],
+        "tags": ["pull source"],
+        "responses": {
+          "201": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
     "/storage/data/{storageId}":{
       "parameters":[{
         "in": "path",
@@ -631,7 +742,6 @@
         "security": [{"Bearer": []}]
       }
     }
-
   },
   "securityDefinitions": {
     "Bearer": {
@@ -696,6 +806,21 @@
         "user_id": {"type": "string"},
         "app_id": {"type": "string"},
         "arrived_at": {"type": "string"}
+      }
+    },
+    "Pull_Source": {
+      "type": "object",
+      "properties": {
+        "taskId": {"type": "object"},
+        "userId": {"type": "string"},
+        "appId": {"type": "string"},
+        "sourceURI": {"type": "string"},
+        "interval": {"type": "integer"},
+        "enabled": {"type": "boolean"},
+        "description": {"type": "string"},
+        "lastExecuted": {"type": "string"},
+        "nextExecution": {"type": "string"},
+        "createdAt": {"type": "string"}
       }
     }
   }

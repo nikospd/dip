@@ -726,6 +726,15 @@
         "type": "string",
         "required": true,
         "description": ""
+      },{
+        "in": "query",
+        "name": "page",
+        "type": "string"
+      },
+      {
+        "in": "query",
+        "name": "size",
+        "type": "string"
       }],
       "get": {
         "summary": "get data payloads from a storage",
@@ -734,8 +743,16 @@
           "200": {
             "description": "",
             "schema":{
-              "type": "array",
-              "items": {"$ref": "#/definitions/Data"}
+              "type": "object",
+              "properties": {
+                "data" :{
+                  "type": "array",
+                  "items": {"$ref": "#/definitions/Data"}
+                },
+                "totalDocs":{
+                  "type": "integer"
+                }
+              }
             }
           }
         },

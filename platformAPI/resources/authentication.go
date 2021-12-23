@@ -96,12 +96,15 @@ func GetUser(c echo.Context, client *mongo.Client, db string, userCol string) er
 	searchKey := "_id"
 	username := c.QueryParam("name")
 	email := c.QueryParam("email")
+	otherId := c.QueryParam("id")
 	if username != "" {
 		searchValue = username
 		searchKey = "username"
 	} else if email != "" {
 		searchValue = email
 		searchKey = "email"
+	} else if otherId != "" {
+		searchValue = otherId
 	}
 	userCollection := client.Database(db).Collection(userCol)
 	opt := options.FindOne()

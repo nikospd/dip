@@ -119,6 +119,11 @@
             "in": "query",
             "name": "email",
             "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "type": "string"
           }
         ],
         "responses": {

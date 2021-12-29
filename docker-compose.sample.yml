@@ -84,6 +84,21 @@ services:
         condition: service_healthy
     networks:
       - prod-dataentryapi
+      
+  prod-pullmechanism:
+    build:
+      context: ./pullMechanism
+      dockerfile: Dockerfile
+    container_name: prod-pullmechanism
+    image: dip-pullmechanism-img:latest
+    restart: always
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+      prod-rabbitmq:
+        condition: service_healthy
+    networks:
+      - prod-pullmechanism
 
 networks:
   prod-mongodb:
@@ -95,4 +110,6 @@ networks:
   prod-firstpersistence:
     name: prod-dip
   prod-dataentryapi:
+    name: prod-dip
+  prod-pullmechanism:
     name: prod-dip

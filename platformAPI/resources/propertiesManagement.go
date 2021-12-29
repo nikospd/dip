@@ -73,7 +73,6 @@ func UpdateApplication(c echo.Context, client *mongo.Client, db string, appCol s
 	tmpFields, _ := bson.Marshal(app)
 	unmarshalErr := bson.Unmarshal(tmpFields, &updateFields)
 	if unmarshalErr != nil {
-		fmt.Println(unmarshalErr)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	updateQuery := bson.D{{"$set", updateFields}}
@@ -87,7 +86,6 @@ func UpdateApplication(c echo.Context, client *mongo.Client, db string, appCol s
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Application not modified"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
@@ -102,7 +100,6 @@ func GetApplicationsByUser(c echo.Context, client *mongo.Client, db string, appC
 		{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -125,7 +122,6 @@ func GetApplicationById(c echo.Context, client *mongo.Client, db string, appCol 
 		{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -150,7 +146,6 @@ func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol s
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Application not deleted"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	//TODO: Delete the storages that are assigned in this app as well
@@ -225,7 +220,6 @@ func GetStoragesByApp(c echo.Context, client *mongo.Client, db string, storageCo
 		{"app_id", appId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -246,7 +240,6 @@ func GetStoragesByUser(c echo.Context, client *mongo.Client, db string, storageC
 	cur, err := collection.Find(context.TODO(), bson.D{{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -282,7 +275,6 @@ func UpdateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	tmpFields, _ := bson.Marshal(storage)
 	unmarshalErr := bson.Unmarshal(tmpFields, &updateFields)
 	if unmarshalErr != nil {
-		fmt.Println(unmarshalErr)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	updateQuery := bson.D{{"$set", updateFields}}
@@ -296,7 +288,6 @@ func UpdateStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage not modified"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
@@ -315,7 +306,6 @@ func DeleteStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not deleted"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	//TODO: Delete the shared ids that are assigned in this storage as well from the userResourcesStratus
@@ -438,7 +428,6 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	case nil:
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "scope not provided"})
 	case "rawPersistence":
-		fmt.Println("raw")
 		storageUpdateQuery = bson.D{{"$set", bson.D{{"app_id", body["appId"]},
 			{"modified_at", time.Now()}}}}
 		appUpdateQuery = bson.D{{"$set", bson.D{{"persist_raw", true},
@@ -451,7 +440,6 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	filter := bson.D{{"_id", storageId}, {"user_id", userId}}
 	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, storageUpdateQuery)
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	if oneStorage.MatchedCount == 0 {
@@ -462,7 +450,6 @@ func AttachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 	filter = bson.D{{"_id", body["appId"]}, {"user_id", userId}}
 	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, appUpdateQuery)
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	if oneApp.MatchedCount == 0 {
@@ -495,7 +482,6 @@ func DetachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 		{"modified_at", time.Now()}}}}
 	oneStorage, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	if oneStorage.MatchedCount == 0 {
@@ -508,7 +494,6 @@ func DetachStorage(c echo.Context, client *mongo.Client, db string, storageCol s
 		{"raw_storage_id", ""}, {"modified_at", time.Now()}}}}
 	oneApp, err := appCollection.UpdateOne(context.TODO(), filter, updateQuery)
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	if oneApp.MatchedCount == 0 {

@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"dev.com/utils"
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,7 +37,6 @@ func CreatePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 		{"_id", pullSource.AppId}})
 	if cur.Err() != nil {
 		if cur.Err() == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Application does not belong to the user"})
 		}
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create pull source"})
@@ -76,7 +74,6 @@ func EnablePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Pull source not modified"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
@@ -115,7 +112,6 @@ func GetPullSourceByApp(c echo.Context, client *mongo.Client, db string, sourceC
 		{"app_id", appId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -135,7 +131,6 @@ func GetPullSourceByUser(c echo.Context, client *mongo.Client, db string, source
 		{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -177,7 +172,6 @@ func UpdatePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Pull source not modified"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
@@ -195,7 +189,6 @@ func DeletePullSource(c echo.Context, client *mongo.Client, db string, sourceCol
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Pull source not deleted"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})

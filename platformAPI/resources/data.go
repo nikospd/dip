@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -33,7 +32,6 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Wrong size given"})
 		}
 	}
-	fmt.Println(page, nPerPage)
 	//Get storage from id
 	//Check if storage belongs to this userId or if it is shared to it
 	findQuery := bson.D{

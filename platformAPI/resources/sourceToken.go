@@ -4,7 +4,6 @@ import (
 	"context"
 	"dev.com/utils"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,7 +37,6 @@ func CreateSourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 		{"_id", stc.AppId}})
 	if cur.Err() != nil {
 		if cur.Err() == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Application does not belong to the user"})
 		}
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create token"})
@@ -63,7 +61,6 @@ func GetSourceTokenByUser(c echo.Context, client *mongo.Client, db string, token
 		{"user_id", userId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -82,7 +79,6 @@ func GetSourceTokenById(c echo.Context, client *mongo.Client, db string, tokenCo
 		{"_id", sourceId}, {"user_id", userId}})
 	if one.Err() != nil {
 		if one.Err() == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -102,7 +98,6 @@ func GetSourceTokenByApp(c echo.Context, client *mongo.Client, db string, tokenC
 		{"app_id", appId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			fmt.Println("not a match!")
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
 		}
 	}
@@ -133,7 +128,6 @@ func ModifySourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 	tmpFields, _ := bson.Marshal(stc)
 	unmarshalErr := bson.Unmarshal(tmpFields, &updateFields)
 	if unmarshalErr != nil {
-		fmt.Println(unmarshalErr)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	updateQuery := bson.D{{"$set", updateFields}}
@@ -145,7 +139,6 @@ func ModifySourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Token not modified"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
@@ -162,7 +155,6 @@ func DeleteSourceToken(c echo.Context, client *mongo.Client, db string, tokenCol
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Token not deleted"})
 	}
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})

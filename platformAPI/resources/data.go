@@ -52,6 +52,7 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 	dataCollection := client.Database(dataDb).Collection(storageId)
 	opts := options.Find()
 	opts.Projection = bson.D{{"_id", 0}}
+	opts.SetSort(bson.D{{"arrived_at", -1}})
 	opts.SetLimit(int64(nPerPage))
 	opts.SetSkip(int64(nPerPage * (page - 1)))
 	cur, dferr := dataCollection.Find(context.TODO(), bson.D{}, opts)

@@ -103,6 +103,40 @@
         }
       }
     },
+    "/user/password": {
+      "put": {
+        "tags": ["user"],
+        "security": [{"Bearer": []}],
+        "summary": "User change password endpoint",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400":{
+            "description": "Bad Request",
+            "schema": {"type": "object", "properties": {"msg": {"type": "string", "example": "New password not provided"}}}
+          },
+          "200": {
+            "description": "OK",
+            "schema": {"type": "object", "properties": {"token": {"type": "string"}}}
+          },
+          "502": {
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
     "/user/profile": {
       "get": {
         "tags": ["user"],
@@ -736,11 +770,11 @@
         "name": "page",
         "type": "string"
       },
-      {
-        "in": "query",
-        "name": "size",
-        "type": "string"
-      }],
+        {
+          "in": "query",
+          "name": "size",
+          "type": "string"
+        }],
       "get": {
         "summary": "get data payloads from a storage",
         "tags": ["data"],

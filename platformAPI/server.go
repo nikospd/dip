@@ -69,6 +69,7 @@ func main() {
 	r.Use(middleware.JWTWithConfig(jwtConfig))
 	//User Info routing
 	r.GET("user/profile", getUser)
+	r.PUT("user/password", changePassword)
 	//SourceToken routing
 	r.POST("source/token", createSourceToken)
 	r.GET("source/tokens", getSourceTokenByUser)
@@ -77,7 +78,6 @@ func main() {
 	r.PUT("source/token/:id", modifySourceToken)
 	r.DELETE("source/token/:id", deleteSourceToken)
 	//Pull source routing
-	//TODO: get/put/delete
 	r.POST("source/pull", createPullSource)
 	r.GET("source/pull/:id", getPullSourceById)
 	r.PUT("source/pull/:id", updatePullSource)
@@ -128,6 +128,11 @@ func getUser(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	userCol := cfg.MongoCollection.Users
 	return resources.GetUser(c, client, db, userCol)
+}
+func changePassword(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	userCol := cfg.MongoCollection.Users
+	return resources.UserChangePassword(c, client, db, userCol)
 }
 func userLogin(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

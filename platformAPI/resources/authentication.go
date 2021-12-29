@@ -85,8 +85,26 @@ func UserForgotPassword() {
 	fmt.Println("Implement me")
 }
 
-func UserChangePassword() {
-	fmt.Println("Implement me")
+func UserChangePassword(c echo.Context, client *mongo.Client, db string, userCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	var body map[string]string
+	c.Bind(&body)
+	if body["newPassword"] == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "New password not provided"})
+	}
+	hash := md5.Sum([]byte(body["newPassword"]))
+	encPass := hex.EncodeToString(hash[:])
+
+	userCollection := client.Database(db).Collection(userCol)
+	updateFilter := bson.D{{"_id", userId}}
+	updateQuery := bson.D{{"$set", bson.D{{"password", encPass}}}}
+	_, err := userCollection.UpdateOne(context.TODO(), updateFilter, updateQuery)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
 }
 
 func GetUser(c echo.Context, client *mongo.Client, db string, userCol string) error {

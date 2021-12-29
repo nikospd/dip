@@ -53,8 +53,7 @@ func main() {
 		Get N last tasks shorted by nextExecution and execute them in different goroutines
 		every X seconds
 	*/
-	searchingTasksInterval := 2
-	col := client.Database("staging").Collection("pull_sources")
+	col := client.Database(cfg.MongoDatabase.Resources).Collection(cfg.MongoCollection.PullSources)
 	var tasks []utils.PullSourceTask
 	for true {
 		cur, err := col.Find(context.TODO(), bson.D{
@@ -75,6 +74,6 @@ func main() {
 				go v.ExecuteTask(channel, queue)
 			}
 		}
-		time.Sleep(time.Duration(searchingTasksInterval) * time.Second)
+		time.Sleep(time.Duration(cfg.SearchingTasksInterval) * time.Second)
 	}
 }

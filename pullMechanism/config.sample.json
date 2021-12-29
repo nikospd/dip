@@ -19,5 +19,6 @@
   },
   "mongoCollection": {
     "pullSources": ""
-  }
+  },
+  "searchingTasksInterval": 10
 }

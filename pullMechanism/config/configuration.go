@@ -29,6 +29,7 @@ type Configuration struct {
 	MongoCollection struct {
 		PullSources string `json:"pullSources"`
 	} `json:"mongoCollection"`
+	SearchingTasksInterval int `json:"searchingTasksInterval"`
 }
 
 func ReadConf(configFile string, cfg *Configuration) {

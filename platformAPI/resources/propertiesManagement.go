@@ -192,7 +192,10 @@ func GetStorageById(c echo.Context, client *mongo.Client, db string, storageCol 
 
 	collection := client.Database(db).Collection(storageCol)
 	one := collection.FindOne(context.TODO(), bson.D{
-		{"user_id", userId},
+		{"$or", bson.A{
+			bson.D{{"user_id", userId}},
+			bson.D{{"shared_with_id", bson.D{{"$in", bson.A{userId}}}}}},
+		},
 		{"_id", storageId}})
 	if one.Err() != nil {
 		if one.Err() == mongo.ErrNoDocuments {
@@ -236,8 +239,13 @@ func GetStoragesByUser(c echo.Context, client *mongo.Client, db string, storageC
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
 
+	findQuery := bson.D{
+		{"$or", bson.A{
+			bson.D{{"user_id", userId}},
+			bson.D{{"shared_with_id", bson.D{{"$in", bson.A{userId}}}}}},
+		}}
 	collection := client.Database(db).Collection(storageCol)
-	cur, err := collection.Find(context.TODO(), bson.D{{"user_id", userId}})
+	cur, err := collection.Find(context.TODO(), findQuery)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})

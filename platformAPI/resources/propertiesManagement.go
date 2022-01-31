@@ -340,7 +340,7 @@ func ShareStorage(c echo.Context, client *mongo.Client, db string, storageCol st
 		{"shared_with_id", bson.D{{"$nin", bson.A{body["targetId"]}}}}}
 	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
 		{"$push", bson.D{{"shared_with_id", body["targetId"]}}},
-		{"$set", bson.D{{"modified_at", time.Now()}}}})
+		{"$set", bson.D{{"modified_at", time.Now()}, {"shared", true}}}})
 	if one.MatchedCount == 0 {
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or already shared"})
 	}
@@ -383,12 +383,27 @@ func UnshareStorage(c echo.Context, client *mongo.Client, db string, storageCol 
 	storageCollection := client.Database(db).Collection(storageCol)
 	filter := bson.D{{"_id", storageId}, {"user_id", userId},
 		{"shared_with_id", bson.D{{"$in", bson.A{body["targetId"]}}}}}
-	one, err := storageCollection.UpdateOne(context.TODO(), filter, bson.D{
-		{"$pull", bson.D{{"shared_with_id", body["targetId"]}}},
-		{"$set", bson.D{{"modified_at", time.Now()}}}})
-	if one.MatchedCount == 0 {
+	//Find storage to check if it is going to stop being shared
+	cur := storageCollection.FindOne(context.TODO(), filter)
+	if cur.Err() == mongo.ErrNoDocuments {
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or not sharing with target"})
 	}
+	var storage utils.Storage
+	flag := true
+	cur.Decode(&storage)
+	if len(storage.SharedWithId) == 1 {
+		flag = false
+	}
+	//Update the storage
+	updateQuery := bson.D{
+		{"$pull", bson.D{{"shared_with_id", body["targetId"]}}},
+		{"$set", bson.D{{"modified_at", time.Now()}, {"shared", flag}}},
+	}
+	fmt.Println(updateQuery)
+	one, err := storageCollection.UpdateOne(context.TODO(), filter, updateQuery)
+	//if one.MatchedCount == 0 {
+	//	return c.JSON(http.StatusNotFound, echo.Map{"msg": "Storage not found or not sharing with target"})
+	//}
 	if one.ModifiedCount == 0 {
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage not modified"})
 	}
@@ -399,9 +414,9 @@ func UnshareStorage(c echo.Context, client *mongo.Client, db string, storageCol 
 	ursCollection := client.Database(db).Collection(ursCol)
 	filter = bson.D{{"_id", body["targetId"]},
 		{"shared_storage_with_me", bson.D{{"$in", bson.A{storageId}}}}}
-	updateQuery := bson.D{{"$pull", bson.D{{"shared_storage_with_me", storageId}}}}
+	resourcesUpdateQuery := bson.D{{"$pull", bson.D{{"shared_storage_with_me", storageId}}}}
 	opts := options.Update().SetUpsert(true)
-	one, err = ursCollection.UpdateOne(context.TODO(), filter, updateQuery, opts)
+	one, err = ursCollection.UpdateOne(context.TODO(), filter, resourcesUpdateQuery, opts)
 	if one.UpsertedCount == 0 && one.ModifiedCount == 0 {
 		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Storage did not exist in urStatus"})
 	}

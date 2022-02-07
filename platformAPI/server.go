@@ -92,6 +92,10 @@ func main() {
 	r.GET("application/:id", getApplicationById)
 	r.PUT("application/:id", updateApplication)
 	r.DELETE("application/:id", deleteApplication)
+	//Application groups property routing
+	r.POST("application/group", createApplicationGroup)
+	r.GET("application/group", getApplicationGroupByUser)
+	r.GET("application/group/:id", getApplicationGroupById)
 	//Storage property routing
 	r.POST("storage", createStorage)
 	r.GET("storage/:id", getStorageById)
@@ -219,9 +223,9 @@ func deletePullSource(c echo.Context) error {
 }
 func createApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
-	storageCol := cfg.MongoCollection.Storages
+	groupCol := cfg.MongoCollection.ApplicationGroups
 	appCol := cfg.MongoCollection.Applications
-	return resources.CreateApplication(c, client, db, storageCol, appCol)
+	return resources.CreateApplication(c, client, db, groupCol, appCol)
 }
 func getApplicationsByUser(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
@@ -242,6 +246,21 @@ func deleteApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	appCol := cfg.MongoCollection.Applications
 	return resources.DeleteApplication(c, client, db, appCol)
+}
+func createApplicationGroup(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	groupCol := cfg.MongoCollection.ApplicationGroups
+	return resources.CreateApplicationGroup(c, client, db, groupCol)
+}
+func getApplicationGroupById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	groupCol := cfg.MongoCollection.ApplicationGroups
+	return resources.GetApplicationGroupById(c, client, db, groupCol)
+}
+func getApplicationGroupByUser(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	groupCol := cfg.MongoCollection.ApplicationGroups
+	return resources.GetApplicationGroupByUser(c, client, db, groupCol)
 }
 func createStorage(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

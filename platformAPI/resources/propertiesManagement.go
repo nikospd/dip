@@ -19,7 +19,7 @@ import (
 	If it gets huge, I will separate each into different files
 */
 
-func CreateApplication(c echo.Context, client *mongo.Client, db string, storageCol string, appCol string) error {
+func CreateApplication(c echo.Context, client *mongo.Client, db string, groupCol string, appCol string) error {
 	//Request body has "description & persistRaw"
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
@@ -28,7 +28,17 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 	if err := c.Bind(app); err != nil {
 		return err
 	}
+	if app.ApplicationGroupId == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Please provide a valid application group"})
+	}
 	app.AppId = utils.CreateRandomHash(20)
+	collection := client.Database(db).Collection(groupCol)
+	_, err := collection.UpdateOne(context.TODO(),
+		bson.D{{"user_id", userId}, {"_id", app.ApplicationGroupId}},
+		bson.D{{"$push", bson.D{{"applications", app.AppId}}}})
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to add application to group"})
+	}
 	switch app.SourceType {
 	case "push":
 		fmt.Println("New push mechanism")
@@ -41,8 +51,8 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, storageC
 	app.RawStorageId = ""
 	app.UserId = userId
 	app.CreatedAt = time.Now()
-	collection := client.Database(db).Collection(appCol)
-	_, err := collection.InsertOne(context.TODO(), app)
+	collection = client.Database(db).Collection(appCol)
+	_, err = collection.InsertOne(context.TODO(), app)
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create resource"})
 	}

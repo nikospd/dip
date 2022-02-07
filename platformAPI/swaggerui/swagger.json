@@ -12,7 +12,7 @@
     "description": "Find out more about DIP",
     "url": "https://github.com/nikospd/dip"
   },
-  "host": "localhost:1323",
+  "host": "83.212.19.17:8081",
   "tags": [
     {
       "name": "user",
@@ -21,6 +21,10 @@
     {
       "name": "application",
       "description": "About application resource"
+    },
+    {
+      "name": "application groups",
+      "description": "About application groups resource"
     },
     {
       "name": "storage",
@@ -187,6 +191,7 @@
               "type": "object",
               "properties": {
                 "sourceType": {"type": "string", "enum": ["push", "pull"]},
+                "applicationGroupId": {"type": "string"},
                 "description": {"type": "string"}
               }
             }
@@ -267,6 +272,70 @@
         },
         "security": [{"Bearer": []}]
 
+      }
+    },
+    "/application/group": {
+      "post": {
+        "tags": ["application groups"],
+        "summary": "Creates a new application group",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Creates  a new application group. You only provide a description.",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "get": {
+        "tags": ["application groups"],
+        "summary": "Get apps by user. Get all the application groups that belongs to the logged in user",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/Application_Group"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+
+      }
+    },
+    "/application/group/{applicationGroupId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "applicationGroupId",
+          "type": "string",
+          "required": true,
+          "description": "Unique applicationGroupId to search for"
+        }
+      ],
+      "get": {
+        "tags": ["application groups"],
+        "summary": "Get application group by id",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {"$ref": "#/definitions/Application_Group"}
+          }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/storage":{
@@ -816,6 +885,18 @@
         "sourceType": {"type": "string", "enum": ["push", "pull"]},
         "persistRaw": {"type": "boolean", "description": "Choose if you want to save all the raw incoming data"},
         "rawStorageId": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
+      }
+    },
+    "Application_Group": {
+      "type": "object",
+      "properties": {
+        "groupId": {"type": "string"},
+        "userId": {"type": "string"},
+        "description": {"type": "string"},
+        "applications": {"type": "array", "items": {"type": "string"}},
+        "numOfApplications": {"type": "integer"},
         "createdAt": {"type": "string"},
         "modifiedAt": {"type": "string"}
       }

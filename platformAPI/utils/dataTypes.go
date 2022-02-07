@@ -32,14 +32,15 @@ func (s *SourceTokenClaims) PrintTheClaims() {
 }
 
 type Application struct {
-	AppId        string    `json:"appId" bson:"_id,omitempty"`
-	UserId       string    `json:"userId" bson:"user_id,omitempty"`
-	Description  string    `json:"description" bson:"description,omitempty"`
-	SourceType   string    `json:"sourceType" bson:"source_type,omitempty"`
-	CreatedAt    time.Time `json:"createdAt" bson:"created_at,omitempty"`
-	ModifiedAt   time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
-	PersistRaw   bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
-	RawStorageId string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
+	AppId              string    `json:"appId" bson:"_id,omitempty"`
+	UserId             string    `json:"userId" bson:"user_id,omitempty"`
+	ApplicationGroupId string    `json:"applicationGroupId" bson:"application_group_id,omitempty"`
+	Description        string    `json:"description" bson:"description,omitempty"`
+	SourceType         string    `json:"sourceType" bson:"source_type,omitempty"`
+	CreatedAt          time.Time `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt         time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
+	PersistRaw         bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
+	RawStorageId       string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
 	/*
 		Future purposes: {
 		HasDevices, DevicesIdPath, DataModel, AggregationRecipes
@@ -83,4 +84,14 @@ type PullSourceTask struct {
 	NextExecution time.Time `json:"nextExecution" bson:"next_execution,omitempty"`
 	ModifiedAt    time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 	CreatedAt     time.Time `json:"createdAt" bson:"created_at,omitempty"`
+}
+
+type ApplicationGroup struct {
+	GroupId           string    `json:"groupId" bson:"_id,omitempty"`
+	UserId            string    `json:"userId" bson:"user_id,omitempty"`
+	Description       string    `json:"description" bson:"description,omitempty"`
+	Applications      []string  `json:"applications,omitempty" bson:"applications,omitempty"`
+	NumOfApplications int       `json:"numOfApplications" bson:"num_of_applications,omitempty"`
+	CreatedAt         time.Time `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt        time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 }

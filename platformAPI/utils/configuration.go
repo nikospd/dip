@@ -20,12 +20,13 @@ type Configuration struct {
 		Data      string `json:"data"`
 	} `json:"mongoDatabase"`
 	MongoCollection struct {
-		Applications string `json:"applications"`
-		SourceTokens string `json:"sourceTokens"`
-		PullSources  string `json:"pullSources"`
-		Storages     string `json:"storages"`
-		Users        string `json:"users"`
-		URStatus     string `json:"userResourcesStatus"`
+		Applications      string `json:"applications"`
+		ApplicationGroups string `json:"applicationGroups"`
+		SourceTokens      string `json:"sourceTokens"`
+		PullSources       string `json:"pullSources"`
+		Storages          string `json:"storages"`
+		Users             string `json:"users"`
+		URStatus          string `json:"userResourcesStatus"`
 	} `json:"mongoCollection"`
 }
 

@@ -338,6 +338,34 @@
         "security": [{"Bearer": []}]
       }
     },
+    "/application/group/new/{applicationGroupId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "applicationGroupId",
+          "type": "string",
+          "required": true,
+          "description": "Unique applicationGroupId as a target for new application group"
+        },
+        {
+          "in": "query",
+          "name": "appId",
+          "type": "string",
+          "required": true,
+          "description": "The application that wants to change application group"
+        }
+      ],
+      "put": {
+        "tags": ["application groups"],
+        "summary": "Get application group by id",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
     "/storage":{
       "post": {
         "tags": ["storage"],

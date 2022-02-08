@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// todo: Change group of one application
+// todo: Delete group (check if its empty from apps first)
 
 func CreateApplicationGroup(c echo.Context, client *mongo.Client, db string, groupCol string) error {
 	user := c.Get("user").(*jwt.Token)

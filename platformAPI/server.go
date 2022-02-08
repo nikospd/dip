@@ -96,6 +96,7 @@ func main() {
 	r.POST("application/group", createApplicationGroup)
 	r.GET("application/group", getApplicationGroupByUser)
 	r.GET("application/group/:id", getApplicationGroupById)
+	r.PUT("application/group/new/:id", changeApplicationGroup)
 	//Storage property routing
 	r.POST("storage", createStorage)
 	r.GET("storage/:id", getStorageById)
@@ -262,6 +263,12 @@ func getApplicationGroupByUser(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	groupCol := cfg.MongoCollection.ApplicationGroups
 	return resources.GetApplicationGroupByUser(c, client, db, groupCol)
+}
+func changeApplicationGroup(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	groupCol := cfg.MongoCollection.ApplicationGroups
+	appCol := cfg.MongoCollection.Applications
+	return resources.ChangeApplicationGroup(c, client, db, groupCol, appCol)
 }
 func createStorage(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

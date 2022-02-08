@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-// todo: remove application from group on delete
 // todo: Change group of one application
 
 func CreateApplicationGroup(c echo.Context, client *mongo.Client, db string, groupCol string) error {
@@ -92,11 +91,55 @@ func GetApplicationGroupByUser(c echo.Context, client *mongo.Client, db string, 
 	return c.JSON(http.StatusOK, groupTable)
 }
 
-//func addApplicationToGroup(c echo.Context, client *mongo.Client, db string, groupCol string, appCol string) error {
-//	user := c.Get("user").(*jwt.Token)
-//	claims := user.Claims.(*jwt.StandardClaims)
-//	userId := claims.Id
-//	groupId := c.Param("id")
-//	appId := c.QueryParam("appId")
-//
-//}
+func ChangeApplicationGroup(c echo.Context, client *mongo.Client, db string, groupCol string, appCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	newGroupId := c.Param("id")
+	appId := c.QueryParam("appId")
+	if appId == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Please provide a valid application id"})
+	}
+	if newGroupId == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Please provide a valid application group id as a target"})
+	}
+
+	collection := client.Database(db).Collection(appCol)
+	oneFind := collection.FindOne(context.TODO(), bson.D{{"_id", appId}, {"user_id", userId}})
+	var app utils.Application
+	if oneFind.Err() != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to fetch application"})
+	}
+	err := oneFind.Decode(&app)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to fetch application"})
+	}
+	if newGroupId == app.ApplicationGroupId {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "New group id cannot be the same with the old one"})
+	}
+	collection = client.Database(db).Collection(groupCol)
+	oneUpdate, err := collection.UpdateOne(context.TODO(),
+		bson.D{{"user_id", userId}, {"_id", newGroupId}},
+		bson.D{{"$push", bson.D{{"applications", appId}}}})
+	if oneUpdate.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Target app group does not belongs to user"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to add application to new group"})
+	}
+	oneUpdate, err = collection.UpdateOne(context.TODO(),
+		bson.D{{"user_id", userId}, {"_id", app.ApplicationGroupId}},
+		bson.D{{"$pull", bson.D{{"applications", appId}}}})
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to remove application from old group"})
+		//	todo: add strategy to be fault tolerance
+	}
+	collection = client.Database(db).Collection(appCol)
+	_, err = collection.UpdateOne(context.TODO(), bson.D{{"_id", appId}},
+		bson.D{{"$set", bson.D{{"application_group_id", newGroupId}}}})
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to change application to new group"})
+		//	todo: add strategy to be fault tolerance
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}

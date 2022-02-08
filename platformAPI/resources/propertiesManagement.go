@@ -143,12 +143,28 @@ func GetApplicationById(c echo.Context, client *mongo.Client, db string, appCol 
 	return c.JSON(http.StatusOK, appTable)
 }
 
-func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol string) error {
+func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol string, groupCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
 	appId := c.Param("id")
+
 	collection := client.Database(db).Collection(appCol)
+	oneFind := collection.FindOne(context.TODO(), bson.D{{"_id", appId}})
+	var app utils.Application
+	err := oneFind.Decode(&app)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to fetch application"})
+	}
+	collection = client.Database(db).Collection(groupCol)
+	_, err = collection.UpdateOne(context.TODO(),
+		bson.D{{"user_id", userId}, {"_id", app.ApplicationGroupId}},
+		bson.D{{"$pull", bson.D{{"applications", appId}}}})
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to remove application from group"})
+	}
+
+	collection = client.Database(db).Collection(appCol)
 	one, err := collection.DeleteOne(context.TODO(), bson.D{
 		{"_id", appId},
 		{"user_id", userId}})

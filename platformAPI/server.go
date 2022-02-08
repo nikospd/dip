@@ -245,7 +245,8 @@ func updateApplication(c echo.Context) error {
 func deleteApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	appCol := cfg.MongoCollection.Applications
-	return resources.DeleteApplication(c, client, db, appCol)
+	groupCol := cfg.MongoCollection.ApplicationGroups
+	return resources.DeleteApplication(c, client, db, appCol, groupCol)
 }
 func createApplicationGroup(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

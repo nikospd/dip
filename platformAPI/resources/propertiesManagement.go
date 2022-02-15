@@ -146,6 +146,7 @@ func GetApplicationById(c echo.Context, client *mongo.Client, db string, appCol 
 	return c.JSON(http.StatusOK, appTable)
 }
 
+//TODO: delete tokens assigned to app on delete
 func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol string, groupCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)

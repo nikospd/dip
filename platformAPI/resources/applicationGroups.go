@@ -143,3 +143,66 @@ func ChangeApplicationGroup(c echo.Context, client *mongo.Client, db string, gro
 	}
 	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
 }
+
+func DeleteApplicationGroup(c echo.Context, client *mongo.Client, db string, groupCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	groupId := c.Param("id")
+
+	collection := client.Database(db).Collection(groupCol)
+	oneFind := collection.FindOne(context.TODO(), bson.D{{"_id", groupId}, {"user_id", userId}})
+	if oneFind.Err() != nil {
+		if oneFind.Err() == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad gateway"})
+	}
+	var group utils.ApplicationGroup
+	err := oneFind.Decode(&group)
+	if len(group.Applications) != 0 {
+		return c.JSON(http.StatusNotAcceptable, echo.Map{"msg": "Application group is not empty"})
+	}
+	one, err := collection.DeleteOne(context.TODO(), bson.D{
+		{"_id", groupId},
+		{"user_id", userId}})
+	if one.DeletedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Group not deleted"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func UpdateApplicationGroup(c echo.Context, client *mongo.Client, db string, groupCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	groupId := c.Param("id")
+	group := new(utils.ApplicationGroup)
+	if err := c.Bind(group); err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	collection := client.Database(db).Collection(groupCol)
+	filter := bson.D{{"_id", groupId}, {"user_id", userId}}
+	//Sanitize data
+	group.GroupId = groupId
+	group.UserId = ""
+	group.CreatedAt = time.Time{}
+	group.ModifiedAt = time.Now()
+	group.Applications = []string{}
+	//Update
+	one, err := collection.UpdateOne(context.TODO(), filter, bson.D{{"$set", group}})
+	//Handle errors and respond
+	if one.MatchedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Application group not found"})
+	}
+	if one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Application group not modified"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}

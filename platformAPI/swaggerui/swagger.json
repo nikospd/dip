@@ -336,6 +336,33 @@
           }
         },
         "security": [{"Bearer": []}]
+      },
+      "put": {
+        "tags": ["application groups"],
+        "summary": "Updates application group's description",
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "schema": {
+            "type": "object",
+            "properties": {"description": {"type": "string"}}
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete": {
+        "tags": ["application groups"],
+        "summary": "Deletes an application group",
+        "responses": {
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+
       }
     },
     "/application/group/new/{applicationGroupId}": {

@@ -33,9 +33,12 @@ func CreateApplication(c echo.Context, client *mongo.Client, db string, groupCol
 	}
 	app.AppId = utils.CreateRandomHash(20)
 	collection := client.Database(db).Collection(groupCol)
-	_, err := collection.UpdateOne(context.TODO(),
+	upOne, err := collection.UpdateOne(context.TODO(),
 		bson.D{{"user_id", userId}, {"_id", app.ApplicationGroupId}},
 		bson.D{{"$push", bson.D{{"applications", app.AppId}}}})
+	if upOne.MatchedCount == 0 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": "Please provide a valid application group"})
+	}
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to add application to group"})
 	}

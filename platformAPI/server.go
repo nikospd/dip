@@ -249,7 +249,9 @@ func deleteApplication(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	appCol := cfg.MongoCollection.Applications
 	groupCol := cfg.MongoCollection.ApplicationGroups
-	return resources.DeleteApplication(c, client, db, appCol, groupCol)
+	pullSourceCol := cfg.MongoCollection.PullSources
+	tokenCol := cfg.MongoCollection.SourceTokens
+	return resources.DeleteApplication(c, client, db, appCol, groupCol, pullSourceCol, tokenCol)
 }
 func createApplicationGroup(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

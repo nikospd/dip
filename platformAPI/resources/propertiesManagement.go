@@ -147,7 +147,7 @@ func GetApplicationById(c echo.Context, client *mongo.Client, db string, appCol 
 }
 
 //TODO: delete tokens assigned to app on delete
-func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol string, groupCol string) error {
+func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol string, groupCol string, pullSourceCol string, tokenCol string) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwt.StandardClaims)
 	userId := claims.Id
@@ -160,6 +160,7 @@ func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol s
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to fetch application"})
 	}
+	//Remove this app from the application group
 	collection = client.Database(db).Collection(groupCol)
 	_, err = collection.UpdateOne(context.TODO(),
 		bson.D{{"user_id", userId}, {"_id", app.ApplicationGroupId}},
@@ -167,7 +168,19 @@ func DeleteApplication(c echo.Context, client *mongo.Client, db string, appCol s
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to remove application from group"})
 	}
-
+	//Delete all the sources assigned to this app
+	collection = client.Database(db).Collection(pullSourceCol)
+	deleteSourcesFilter := bson.D{{"user_id", userId}, {"app_id", appId}}
+	_, err = collection.DeleteMany(context.TODO(), deleteSourcesFilter)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to delete sources from application"})
+	}
+	collection = client.Database(db).Collection(tokenCol)
+	_, err = collection.DeleteMany(context.TODO(), deleteSourcesFilter)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to delete sources from application"})
+	}
+	//Delete the actual app
 	collection = client.Database(db).Collection(appCol)
 	one, err := collection.DeleteOne(context.TODO(), bson.D{
 		{"_id", appId},

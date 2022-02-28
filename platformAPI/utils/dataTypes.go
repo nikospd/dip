@@ -95,3 +95,13 @@ type ApplicationGroup struct {
 	CreatedAt         time.Time `json:"createdAt" bson:"created_at,omitempty"`
 	ModifiedAt        time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 }
+
+type StorageFilter struct {
+	FilterId    string    `json:"filterId" bson:"_id,omitempty"`
+	UserId      string    `json:"userId" bson:"user_id,omitempty"`
+	StorageId   string    `json:"storageId" bson:"storage_id,omitempty"`
+	Description string    `json:"description" bson:"description,omitempty"`
+	Attributes  []string  `json:"attributes,omitempty" bson:"attributes,omitempty"`
+	CreatedAt   time.Time `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt  time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
+}

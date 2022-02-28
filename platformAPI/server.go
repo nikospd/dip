@@ -110,6 +110,8 @@ func main() {
 	r.POST("storage/unshare/:id", unshareStorage)
 	r.POST("storage/attach/:id", attachStorage)
 	r.POST("storage/detach/:id", detachStorage)
+	//StorageFilter routing
+	r.GET("storage/filter/:id", getStorageFilter)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -337,6 +339,12 @@ func detachStorage(c echo.Context) error {
 	storageCol := cfg.MongoCollection.Storages
 	appCol := cfg.MongoCollection.Applications
 	return resources.DetachStorage(c, client, db, storageCol, appCol)
+}
+func getStorageFilter(c echo.Context) error {
+	resourcesDb := cfg.MongoDatabase.Resources
+	dataDb := cfg.MongoDatabase.Data
+	filterCol := cfg.MongoCollection.StorageFilters
+	return resources.GetStorageFilter(c, client, dataDb, resourcesDb, filterCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

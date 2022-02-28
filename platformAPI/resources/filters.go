@@ -44,7 +44,7 @@ func GetStorageFilter(c echo.Context, client *mongo.Client, dataDb string, resou
 	cur = collection.FindOne(context.TODO(), bson.D{{"user_id", userId}, {"storage_id", storageId}})
 	if cur.Err() != nil {
 		if cur.Err() == mongo.ErrNoDocuments {
-			return c.JSON(http.StatusOK, echo.Map{"msg": "No filter found", "document": document, "filter": "[]"})
+			return c.JSON(http.StatusOK, echo.Map{"msg": "No filter found", "document": document, "filter": bson.A{}})
 		}
 	}
 	var filter utils.StorageFilter

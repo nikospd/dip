@@ -111,7 +111,10 @@ func main() {
 	r.POST("storage/attach/:id", attachStorage)
 	r.POST("storage/detach/:id", detachStorage)
 	//StorageFilter routing
+	r.POST("storage/filter/:id", createStorageFilter)
 	r.GET("storage/filter/:id", getStorageFilter)
+	r.PUT("storage/filter/:id", updateStorageFilter)
+	r.DELETE("storage/filter/:id", deleteStorageFilter)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -340,11 +343,26 @@ func detachStorage(c echo.Context) error {
 	appCol := cfg.MongoCollection.Applications
 	return resources.DetachStorage(c, client, db, storageCol, appCol)
 }
+func createStorageFilter(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	filterCol := cfg.MongoCollection.StorageFilters
+	return resources.CreateStorageFilter(c, client, db, filterCol)
+}
 func getStorageFilter(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources
 	dataDb := cfg.MongoDatabase.Data
 	filterCol := cfg.MongoCollection.StorageFilters
 	return resources.GetStorageFilter(c, client, dataDb, resourcesDb, filterCol)
+}
+func updateStorageFilter(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	filterCol := cfg.MongoCollection.StorageFilters
+	return resources.UpdateStorageFilter(c, client, db, filterCol)
+}
+func deleteStorageFilter(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	filterCol := cfg.MongoCollection.StorageFilters
+	return resources.DeleteStorageFilter(c, client, db, filterCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

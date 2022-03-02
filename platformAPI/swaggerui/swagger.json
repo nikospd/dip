@@ -31,6 +31,10 @@
       "description": "About storage management"
     },
     {
+      "name": "storage filters",
+      "description": "About storage filters management"
+    },
+    {
       "name": "source token",
       "description": "About source token management. For push mechanism"
     },
@@ -634,6 +638,111 @@
         "security": [{"Bearer": []}]
       }
     },
+    "/storage/filter/{id}": {
+      "post":{
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "**Put the StorageId**"
+          },{
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {"type": "string"},
+                "attributes": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }],
+        "summary": "Creates a filter for incoming attributes at a storage",
+        "tags": ["storage filters"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "get":{
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "**Put the StorageId**"
+        }],
+        "tags": ["storage filters"],
+        "summary": "Gets the attribute's filter of a storage if exists",
+        "responses":{
+          "404": {"description": "No documents at this storage yet"},
+          "206": {
+            "description": "No filter found but will return the first document of the storage as a model for the new filter",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {"type": "string", "example": "No filter found"},
+                "document": {"$ref": "#/definitions/Data"},
+                "filter": {"type": "array","items": {}, "example": []}
+              }
+            }
+          },
+          "200":{
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "msg": {"type": "string", "example": "OK"},
+                "document": {"$ref": "#/definitions/Data"},
+                "filter": {"$ref": "#/definitions/Storage_Filter"}
+              }
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "put":{
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "**Put the FilterId**"
+          },{
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "description": {"type": "string"},
+                "attributes": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }],
+        "summary": "Updates an active filter as for the attributes and the description. Attributes cannot be an empty array",
+        "tags": ["storage filters"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete":{
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "**Put the FilterId**"
+        }],
+        "summary": "Deletes an active fiter",
+        "tags": ["storage filters"],
+        "responses":{
+          "200": {"description": "OK"}
+        }
+      }
+    },
     "/source/token": {
       "post":{
         "summary": "Creates a new source token for the push mechanism",
@@ -1013,6 +1122,18 @@
         "lastExecuted": {"type": "string"},
         "nextExecution": {"type": "string"},
         "createdAt": {"type": "string"}
+      }
+    },
+    "Storage_Filter": {
+      "type": "object",
+      "properties": {
+        "flterId": {"type": "object"},
+        "userId": {"type": "string"},
+        "storageId": {"type": "string"},
+        "description": {"type": "string"},
+        "attributes": {"type": "array", "items": {"type": "string"}},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
       }
     }
   }

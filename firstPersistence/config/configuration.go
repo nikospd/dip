@@ -28,10 +28,11 @@ type Configuration struct {
 		Data      string `json:"data"`
 	} `json:"mongoDatabase"`
 	MongoCollection struct {
-		Applications string `json:"applications"`
-		SourceTokens string `json:"sourceTokens"`
-		Storages     string `json:"storages"`
-		Users        string `json:"users"`
+		Applications   string `json:"applications"`
+		SourceTokens   string `json:"sourceTokens"`
+		Storages       string `json:"storages"`
+		Users          string `json:"users"`
+		StorageFilters string `json:"storageFilters"`
 	} `json:"mongoCollection"`
 }
 

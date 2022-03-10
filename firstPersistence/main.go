@@ -78,6 +78,15 @@ func main() {
 			utils.FailOnError(err, "Failed to decode application from database")
 			//Save the message if raw persistence is activated
 			if application.PersistRaw {
+				filterCollection := client.Database(cfg.MongoDatabase.Resources).Collection(cfg.MongoCollection.StorageFilters)
+				filter, err := utils.CheckFilter(application.RawStorageId, filterCollection)
+				if err != nil {
+					utils.FailOnError(err, "Failed to get filter")
+					err = d.Ack(false)
+				}
+				if len(filter.Attributes) != 0 {
+					filter.Apply(msg)
+				}
 				persistCollection := client.Database(cfg.MongoDatabase.Data).Collection(application.RawStorageId)
 				persistCollection.InsertOne(context.TODO(), msg)
 			}

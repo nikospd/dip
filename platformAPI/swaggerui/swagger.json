@@ -661,7 +661,7 @@
         "summary": "Creates a filter for incoming attributes at a storage",
         "tags": ["storage filters"],
         "responses":{
-          "200": {"description": "OK"}
+          "201": {"description": "OK"}
         },
         "security": [{"Bearer": []}]
       },
@@ -740,7 +740,8 @@
         "tags": ["storage filters"],
         "responses":{
           "200": {"description": "OK"}
-        }
+        },
+        "security": [{"Bearer": []}]
       }
     },
     "/source/token": {

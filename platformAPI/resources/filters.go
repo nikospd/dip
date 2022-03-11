@@ -43,7 +43,7 @@ func CreateStorageFilter(c echo.Context, client *mongo.Client, db string, filter
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create resource"})
 	}
-	return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Storage filter created", "id": token})
+	return c.JSON(http.StatusCreated, echo.Map{"msg": "Storage filter created", "id": token})
 }
 
 func GetStorageFilter(c echo.Context, client *mongo.Client, dataDb string, resourcesDb string, filterCol string) error {

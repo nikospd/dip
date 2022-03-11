@@ -37,9 +37,11 @@ type StorageFilter struct {
 	ModifiedAt  time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 }
 
-func (f *StorageFilter) Apply(msg IncomingMessage) error {
+func (f *StorageFilter) Apply(msg *IncomingMessage) error {
+	filtered_payload := make(map[string]interface{})
 	for _, s := range f.Attributes {
-		delete(msg.Payload, s)
+		filtered_payload[s] = msg.Payload[s]
 	}
+	msg.Payload = filtered_payload
 	return nil
 }

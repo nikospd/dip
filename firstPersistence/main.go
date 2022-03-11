@@ -85,7 +85,7 @@ func main() {
 					err = d.Ack(false)
 				}
 				if len(filter.Attributes) != 0 {
-					filter.Apply(msg)
+					filter.Apply(&msg)
 				}
 				persistCollection := client.Database(cfg.MongoDatabase.Data).Collection(application.RawStorageId)
 				persistCollection.InsertOne(context.TODO(), msg)

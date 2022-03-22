@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -38,36 +39,29 @@ type IncomingMessage struct {
 }
 
 type StorageFilter struct {
-	FilterId    string     `json:"filterId" bson:"_id,omitempty"`
-	UserId      string     `json:"userId" bson:"user_id,omitempty"`
-	StorageId   string     `json:"storageId" bson:"storage_id,omitempty"`
-	Description string     `json:"description" bson:"description,omitempty"`
-	Attributes  [][]string `json:"attributes,omitempty" bson:"attributes,omitempty"`
-	CreatedAt   time.Time  `json:"createdAt" bson:"created_at,omitempty"`
-	ModifiedAt  time.Time  `json:"modifiedAt" bson:"modified_at,omitempty"`
+	FilterId    string                 `json:"filterId" bson:"_id,omitempty"`
+	UserId      string                 `json:"userId" bson:"user_id,omitempty"`
+	StorageId   string                 `json:"storageId" bson:"storage_id,omitempty"`
+	Description string                 `json:"description" bson:"description,omitempty"`
+	Attributes  map[string]interface{} `json:"attributes,omitempty" bson:"attributes,omitempty"`
+	CreatedAt   time.Time              `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt  time.Time              `json:"modifiedAt" bson:"modified_at,omitempty"`
 }
 
 func (f *StorageFilter) Apply(msg *IncomingMessage) error {
-	filteredObj := make(map[string]interface{})
-	for _, f1 := range f.Attributes {
-		tmp := msg.Payload
-		for _, f2 := range f1[:len(f1)-1] {
-			if _, ok := tmp[f2]; ok {
-				tmp = tmp[f2].(map[string]interface{})
-			} else {
-				break
-			}
-		}
-		item := tmp[f1[len(f1)-1]]
-		if item == nil {
-			continue
-		}
-		for i := len(f1) - 1; i >= 1; i-- {
-			tmp := map[string]interface{}{f1[i]: item}
-			item = tmp
-		}
-		filteredObj[f1[0]] = item
-	}
-	msg.Payload = filteredObj
+	msg.Payload = filterHelper(msg.Payload, f.Attributes)
 	return nil
+}
+func filterHelper(data map[string]interface{}, filter map[string]interface{}) map[string]interface{} {
+	filteredObj := make(map[string]interface{})
+	for key := range filter {
+		if reflect.TypeOf(filter[key]) == reflect.TypeOf(filteredObj) {
+			if _, ok := data[key]; ok {
+				filteredObj[key] = filterHelper(data[key].(map[string]interface{}), filter[key].(map[string]interface{}))
+			}
+		} else {
+			filteredObj[key] = data[key]
+		}
+	}
+	return filteredObj
 }

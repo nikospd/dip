@@ -21,7 +21,9 @@ type Configuration struct {
 		Port     string `json:"port"`
 	} `json:"amqpCredentials"`
 	AmqpQueues struct {
-		IncomingData string `json:"incomingData"`
+		IncomingData     string `json:"incomingData"`
+		IntegrationQueue string `json:"integrationQueue"`
+		AutomationQueue  string `json:"automationQueue"`
 	} `json:"amqpQueues"`
 	MongoDatabase struct {
 		Resources string `json:"resources"`

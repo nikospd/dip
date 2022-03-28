@@ -12,7 +12,9 @@
     "port": ""
   },
   "amqpQueues": {
-    "incomingData": ""
+    "incomingData": "",
+    "integrationQueue": "",
+    "automationQueue": ""
   },
   "mongoDatabase": {
     "resources": "",

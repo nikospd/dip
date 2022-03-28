@@ -6,14 +6,16 @@ import (
 )
 
 type Application struct {
-	AppId        string    `json:"appId" bson:"_id,omitempty"`
-	UserId       string    `json:"userId" bson:"user_id,omitempty"`
-	Description  string    `json:"description" bson:"description,omitempty"`
-	CreatedAt    time.Time `json:"createdAt" bson:"created_at,omitempty"`
-	ModifiedAt   time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
-	PersistRaw   bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
-	RawStorageId string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
-	HasDevices   bool      `json:"hasDevices" bson:"has_devices,omitempty"`
+	AppId           string    `json:"appId" bson:"_id,omitempty"`
+	UserId          string    `json:"userId" bson:"user_id,omitempty"`
+	Description     string    `json:"description" bson:"description,omitempty"`
+	CreatedAt       time.Time `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt      time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
+	PersistRaw      bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
+	RawStorageId    string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
+	HasIntegrations bool      `json:"hasIntegrations" bson:"has_integrations,omitempty"`
+	HasAutomations  bool      `json:"hasAutomations" bson:"has_automations,omitempty"`
+	HasDevices      bool      `json:"hasDevices" bson:"has_devices,omitempty"`
 	/*
 		Future purposes: {
 		HasDevices, DevicesIdPath, DataModel, AggregationRecipes, ShareDataWith

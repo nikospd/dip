@@ -19,6 +19,8 @@ import (
 var client *mongo.Client
 var channel *amqp.Channel
 var queue amqp.Queue
+var integrationQueue amqp.Queue
+var automationQueue amqp.Queue
 var cfg config.Configuration
 
 func main() {
@@ -48,7 +50,13 @@ func main() {
 	utils.FailOnError(err, "Failed to open a channel")
 	queue, err = channel.QueueDeclare(
 		cfg.AmqpQueues.IncomingData, true, false, false, false, nil)
-	utils.FailOnError(err, "Failed to declare a queue")
+	utils.FailOnError(err, "Failed to declare incoming data queue")
+	integrationQueue, err = channel.QueueDeclare(
+		cfg.AmqpQueues.IntegrationQueue, true, false, false, false, nil)
+	utils.FailOnError(err, "Failed to declare integration queue")
+	automationQueue, err = channel.QueueDeclare(
+		cfg.AmqpQueues.AutomationQueue, true, false, false, false, nil)
+	utils.FailOnError(err, "Failed to declare automation queue")
 
 	msgs, err := channel.Consume(queue.Name, "", false, false, false, false, nil)
 
@@ -89,6 +97,26 @@ func main() {
 				}
 				persistCollection := client.Database(cfg.MongoDatabase.Data).Collection(application.RawStorageId)
 				persistCollection.InsertOne(context.TODO(), msg)
+			}
+			//Publish message for integrations / automations
+			pubMsg, _ := json.Marshal(msg)
+			if application.HasIntegrations {
+				err = channel.Publish("", integrationQueue.Name, false, false,
+					amqp.Publishing{
+						DeliveryMode: amqp.Persistent,
+						ContentType:  "text/plain",
+						Body:         pubMsg,
+					})
+				utils.FailOnError(err, "Failed to publish integration message")
+			}
+			if application.HasAutomations {
+				err = channel.Publish("", automationQueue.Name, false, false,
+					amqp.Publishing{
+						DeliveryMode: amqp.Persistent,
+						ContentType:  "text/plain",
+						Body:         pubMsg,
+					})
+				utils.FailOnError(err, "Failed to publish automation message")
 			}
 			//Make the acknowledgment
 			err = d.Ack(false)

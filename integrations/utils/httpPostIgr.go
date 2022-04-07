@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type HttpPostIntegration struct {
-	Uri string `json:"uri" bson:"uri,omitempty"`
+	Uri     string            `json:"uri" bson:"uri,omitempty"`
+	Headers map[string]string `json:"headers" bson:"headers,omitempty"`
 }
 
 func (i HttpPostIntegration) Send(msg IncomingMessage) error {
@@ -15,7 +17,19 @@ func (i HttpPostIntegration) Send(msg IncomingMessage) error {
 	if err != nil {
 		return err
 	}
-	resp, err := http.Post(i.Uri, "application/json", bytes.NewBuffer(body))
+	timeout := time.Duration(3 * time.Second)
+	client := http.Client{Timeout: timeout}
+
+	request, err := http.NewRequest("POST", i.Uri, bytes.NewBuffer(body))
+	request.Header.Set("content-type", "application/json")
+	for k, v := range i.Headers {
+		request.Header.Set(k, v)
+	}
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(request)
 	if err != nil {
 		return err
 	}

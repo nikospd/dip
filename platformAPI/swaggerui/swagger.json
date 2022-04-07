@@ -43,6 +43,10 @@
       "description": "About pull source management. For pull mechanism"
     },
     {
+      "name": "integrations",
+      "description": "About integration resource"
+    },
+    {
       "name": "data",
       "description": "About data payloads"
     }
@@ -988,6 +992,36 @@
         "tags": ["pull source"],
         "responses": {
           "201": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/integration":{
+      "post":{
+        "summary": "Creates a new pull source as a task for the push mechanism. ",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "appId": {"type": "string"},
+                "type": {"type": "string", "enum": ["httpPost"]},
+                "option": {"type": "object", "properties":{
+                  "uri": {"type": "string"}
+                }},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "tags": ["integrations"],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
         },
         "security": [{"Bearer": []}]
       }

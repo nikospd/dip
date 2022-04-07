@@ -41,6 +41,7 @@ type Application struct {
 	ModifiedAt         time.Time `json:"modifiedAt" bson:"modified_at,omitempty"`
 	PersistRaw         bool      `json:"persistRaw" bson:"persist_raw,omitempty"`
 	RawStorageId       string    `json:"rawStorageId" bson:"raw_storage_id,omitempty"`
+	HasIntegrations    bool      `json:"hasIntegrations" bson:"has_integrations,omitempty"`
 	/*
 		Future purposes: {
 		HasDevices, DevicesIdPath, DataModel, AggregationRecipes

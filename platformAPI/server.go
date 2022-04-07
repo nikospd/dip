@@ -369,7 +369,8 @@ func deleteStorageFilter(c echo.Context) error {
 func createIntegration(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources
 	igrCol := cfg.MongoCollection.Integrations
-	return resources.CreateIntegration(c, client, db, igrCol)
+	appCol := cfg.MongoCollection.Applications
+	return resources.CreateIntegration(c, client, db, igrCol, appCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

@@ -97,11 +97,34 @@ type ApplicationGroup struct {
 }
 
 type StorageFilter struct {
-	FilterId    string        `json:"filterId" bson:"_id,omitempty"`
-	UserId      string        `json:"userId" bson:"user_id,omitempty"`
-	StorageId   string        `json:"storageId" bson:"storage_id,omitempty"`
-	Description string        `json:"description" bson:"description,omitempty"`
-	Attributes  map[string]interface{}    `json:"attributes,omitempty" bson:"attributes,omitempty"`
-	CreatedAt   time.Time     `json:"createdAt" bson:"created_at,omitempty"`
-	ModifiedAt  time.Time     `json:"modifiedAt" bson:"modified_at,omitempty"`
+	FilterId    string                 `json:"filterId" bson:"_id,omitempty"`
+	UserId      string                 `json:"userId" bson:"user_id,omitempty"`
+	StorageId   string                 `json:"storageId" bson:"storage_id,omitempty"`
+	Description string                 `json:"description" bson:"description,omitempty"`
+	Attributes  map[string]interface{} `json:"attributes,omitempty" bson:"attributes,omitempty"`
+	CreatedAt   time.Time              `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt  time.Time              `json:"modifiedAt" bson:"modified_at,omitempty"`
+}
+
+type Integration struct {
+	Id              string           `json:"id" bson:"_id,omitempty"`
+	AppId           string           `json:"appId" bson:"app_id,omitempty"`
+	UserId          string           `json:"userId" bson:"user_id,omitempty"`
+	Description     string           `json:"description" bson:"description,omitempty"`
+	IntegrationType IntegrationTypes `json:"type" bson:"type,omitempty"`
+	//Change this to take IntegrationOption interface
+	Option     HttpPostIntegration `json:"option" bson:"option,omitempty"`
+	CreatedAt  time.Time           `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt time.Time           `json:"modifiedAt" bson:"modified_at,omitempty"`
+}
+
+type IntegrationTypes string
+
+type IntegrationOption interface {
+	Send(string) error
+	CheckOption() error
+}
+
+type HttpPostIntegration struct {
+	Uri string `json:"uri" bson:"uri,omitempty"`
 }

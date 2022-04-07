@@ -41,5 +41,5 @@ func CreateIntegration(c echo.Context, client *mongo.Client, db string, igrCol s
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create resource"})
 	}
-	return c.JSON(http.StatusOK, echo.Map{"msg": "Integration created", "id": token})
+	return c.JSON(http.StatusCreated, echo.Map{"msg": "Integration created", "id": token})
 }

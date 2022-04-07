@@ -16,7 +16,7 @@ func CreateIntegration(c echo.Context, client *mongo.Client, db string, igrCol s
 	userId := claims.Id
 	igr := new(utils.Integration)
 	if err := c.Bind(igr); err != nil {
-		return err
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Internal server error"})
 	}
 	//Need check for appId if belongs to the user
 	if igr.AppId == "" {

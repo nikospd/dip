@@ -126,5 +126,6 @@ type IntegrationOption interface {
 }
 
 type HttpPostIntegration struct {
-	Uri string `json:"uri" bson:"uri,omitempty"`
+	Uri     string            `json:"uri" bson:"uri,omitempty"`
+	Headers map[string]string `json:"headers" bson:"headers,omitempty"`
 }

@@ -28,6 +28,7 @@ type Configuration struct {
 		StorageFilters    string `json:"storageFilters"`
 		Users             string `json:"users"`
 		URStatus          string `json:"userResourcesStatus"`
+		Integrations      string `json:"integrations"`
 	} `json:"mongoCollection"`
 }
 

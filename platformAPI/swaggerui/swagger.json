@@ -1009,7 +1009,8 @@
                 "appId": {"type": "string"},
                 "type": {"type": "string", "enum": ["httpPost"]},
                 "option": {"type": "object", "properties":{
-                  "uri": {"type": "string"}
+                  "uri": {"type": "string"},
+                  "headers": {"type": "object", "example": {"key1": "value1", "key2": "value2"}}
                 }},
                 "description": {"type": "string"}
               }

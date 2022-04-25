@@ -117,6 +117,8 @@ func main() {
 	r.DELETE("storage/filter/:id", deleteStorageFilter)
 	//Integration routing
 	r.POST("integration", createIntegration)
+	//Automation routing
+	r.POST("automation", createAutomation)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -371,6 +373,12 @@ func createIntegration(c echo.Context) error {
 	igrCol := cfg.MongoCollection.Integrations
 	appCol := cfg.MongoCollection.Applications
 	return resources.CreateIntegration(c, client, db, igrCol, appCol)
+}
+func createAutomation(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	autCol := cfg.MongoCollection.Automations
+	appCol := cfg.MongoCollection.Applications
+	return resources.CreateAutomation(c, client, db, autCol, appCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

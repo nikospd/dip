@@ -998,7 +998,7 @@
     },
     "/integration":{
       "post":{
-        "summary": "Creates a new pull source as a task for the push mechanism. ",
+        "summary": "Creates a new Integration. Available types [httpPost]. If automationIntegration flag is true, this integration is about an automation, and in appId field must contain the automationId respectively.",
         "parameters": [
           {
             "in": "body",
@@ -1012,7 +1012,8 @@
                   "uri": {"type": "string"},
                   "headers": {"type": "object", "example": {"key1": "value1", "key2": "value2"}}
                 }},
-                "description": {"type": "string"}
+                "description": {"type": "string"},
+                "automationIntegration": {"type": "boolean", "example": False}
               }
             }
           }

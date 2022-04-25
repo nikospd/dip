@@ -108,11 +108,12 @@ type StorageFilter struct {
 }
 
 type Integration struct {
-	Id              string           `json:"id" bson:"_id,omitempty"`
-	AppId           string           `json:"appId" bson:"app_id,omitempty"`
-	UserId          string           `json:"userId" bson:"user_id,omitempty"`
-	Description     string           `json:"description" bson:"description,omitempty"`
-	IntegrationType IntegrationTypes `json:"type" bson:"type,omitempty"`
+	Id                    string           `json:"id" bson:"_id,omitempty"`
+	AppId                 string           `json:"appId" bson:"app_id,omitempty"`
+	UserId                string           `json:"userId" bson:"user_id,omitempty"`
+	Description           string           `json:"description" bson:"description,omitempty"`
+	AutomationIntegration bool             `json:"automationIntegration" bson:"automation_integration,omitempty"`
+	IntegrationType       IntegrationTypes `json:"type" bson:"type,omitempty"`
 	//Change this to take IntegrationOption interface
 	Option     HttpPostIntegration `json:"option" bson:"option,omitempty"`
 	CreatedAt  time.Time           `json:"createdAt" bson:"created_at,omitempty"`
@@ -130,3 +131,21 @@ type HttpPostIntegration struct {
 	Uri     string            `json:"uri" bson:"uri,omitempty"`
 	Headers map[string]string `json:"headers" bson:"headers,omitempty"`
 }
+
+type Automation struct {
+	Id            string         `json:"id" bson:"_id,omitempty"`
+	AppId         string         `json:"appId" bson:"app_id,omitempty"`
+	UserId        string         `json:"userId" bson:"user_id,omitempty"`
+	Description   string         `json:"description" bson:"description"`
+	Type          OperationTypes `json:"type" bson:"type,omitempty"`
+	FirstOperand  AttrOperand    `json:"firstOperand" bson:"first_operand,omitempty"`
+	SecondOperand ConstOperand   `json:"secondOperand" bson:"second_operand,omitempty"`
+	CreatedAt     time.Time      `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt    time.Time      `json:"modifiedAt" bson:"modified_at,omitempty"`
+}
+
+type OperationTypes string
+
+type AttrOperand map[string]interface{}
+
+type ConstOperand interface{}

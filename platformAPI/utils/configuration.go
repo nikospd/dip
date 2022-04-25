@@ -29,6 +29,7 @@ type Configuration struct {
 		Users             string `json:"users"`
 		URStatus          string `json:"userResourcesStatus"`
 		Integrations      string `json:"integrations"`
+		Automations       string `json:"automations"`
 	} `json:"mongoCollection"`
 }
 

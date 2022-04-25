@@ -31,23 +31,25 @@ func CreateIntegration(c echo.Context, client *mongo.Client, db string, igrCol s
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"msg": err.Error()})
 	}
-	//Check if application belongs to user and update the HasIntegrations flag
-	collection := client.Database(db).Collection(appCol)
-	one, err := collection.UpdateOne(context.TODO(), bson.D{{"user_id", userId}, {"_id", igr.AppId}},
-		bson.D{{"$set", bson.D{{"has_integrations", true}}}})
-	if one.MatchedCount == 0 {
-		return c.JSON(http.StatusUnauthorized, echo.Map{"msg": "Application does not belong to the user"})
-	}
-	if err != nil {
-		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Internal server error"})
-	}
+	if !igr.AutomationIntegration {
+		//Check if application belongs to user and update the HasIntegrations flag
+		collection := client.Database(db).Collection(appCol)
+		one, err := collection.UpdateOne(context.TODO(), bson.D{{"user_id", userId}, {"_id", igr.AppId}},
+			bson.D{{"$set", bson.D{{"has_integrations", true}}}})
+		if one.MatchedCount == 0 {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"msg": "Application does not belong to the user"})
+		}
+		if err != nil {
+			return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Internal server error"})
+		}
+	} // Else, todo: check automations
 	//Fill the values
 	token := utils.CreateRandomHash(20)
 	igr.Id = token
 	igr.CreatedAt = time.Now()
 	igr.UserId = userId
 	//Insert document
-	collection = client.Database(db).Collection(igrCol)
+	collection := client.Database(db).Collection(igrCol)
 	_, err = collection.InsertOne(context.TODO(), igr)
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to create resource"})

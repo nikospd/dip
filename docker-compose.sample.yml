@@ -99,6 +99,36 @@ services:
         condition: service_healthy
     networks:
       - prod-pullmechanism
+      
+  prod-integrations:
+    build:
+      context: ./integrations
+      dockerfile: Dockerfile
+    container_name: prod-integrations
+    image: dip-integrations-img:latest
+    restart: always
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+      prod-rabbitmq:
+        condition: service_healthy
+    networks:
+      - prod-integrations
+      
+  prod-automations:
+    build:
+      context: ./automations
+      dockerfile: Dockerfile
+    container_name: prod-automations
+    image: dip-automations-img:latest
+    restart: always
+    depends_on:
+      prod-mongodb:
+        condition: service_healthy
+      prod-rabbitmq:
+        condition: service_healthy
+    networks:
+      - prod-automations
 
 networks:
   prod-mongodb:
@@ -112,4 +142,8 @@ networks:
   prod-dataentryapi:
     name: prod-dip
   prod-pullmechanism:
+    name: prod-dip
+  prod-integrations:
+    name: prod-dip
+  prod-automations:
     name: prod-dip

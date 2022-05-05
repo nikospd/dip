@@ -56,7 +56,7 @@ func GetStorageFilter(c echo.Context, client *mongo.Client, dataDb string, resou
 	collection := client.Database(dataDb).Collection(storageId)
 	opts := options.FindOne()
 	opts.Projection = bson.D{{"_id", 0}}
-	opts.SetSort(bson.D{{"arrived_at", 1}})
+	opts.SetSort(bson.D{{"arrived_at", -1}})
 	cur := collection.FindOne(context.TODO(), bson.D{{"user_id", userId}}, opts)
 	if cur.Err() != nil {
 		if cur.Err() == mongo.ErrNoDocuments {

@@ -62,7 +62,9 @@ func filterHelper(data map[string]interface{}, filter map[string]interface{}) ma
 				filteredObj[key] = filterHelper(data[key].(map[string]interface{}), filter[key].(map[string]interface{}))
 			}
 		} else {
-			filteredObj[key] = data[key]
+			if filter[key].(float64) == 1 {
+				filteredObj[key] = data[key]
+			}
 		}
 	}
 	return filteredObj

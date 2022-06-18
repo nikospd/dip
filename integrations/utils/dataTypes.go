@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"reflect"
 	"time"
 )
 
@@ -46,4 +47,34 @@ func (i *Integration) Send(msg IncomingMessage) error {
 type IntegrationOption interface {
 	Send(message IncomingMessage) error
 	CheckOption() error
+}
+
+type StorageFilter struct {
+	FilterId    string                 `json:"filterId" bson:"_id,omitempty"`
+	UserId      string                 `json:"userId" bson:"user_id,omitempty"`
+	StorageId   string                 `json:"storageId" bson:"storage_id,omitempty"`
+	Description string                 `json:"description" bson:"description,omitempty"`
+	Attributes  map[string]interface{} `json:"attributes,omitempty" bson:"attributes,omitempty"`
+	CreatedAt   time.Time              `json:"createdAt" bson:"created_at,omitempty"`
+	ModifiedAt  time.Time              `json:"modifiedAt" bson:"modified_at,omitempty"`
+}
+
+func (f *StorageFilter) Apply(msg *IncomingMessage) error {
+	msg.Payload = filterHelper(msg.Payload, f.Attributes)
+	return nil
+}
+func filterHelper(data map[string]interface{}, filter map[string]interface{}) map[string]interface{} {
+	filteredObj := make(map[string]interface{})
+	for key := range filter {
+		if reflect.TypeOf(filter[key]) == reflect.TypeOf(filteredObj) {
+			if _, ok := data[key]; ok {
+				filteredObj[key] = filterHelper(data[key].(map[string]interface{}), filter[key].(map[string]interface{}))
+			}
+		} else {
+			if filter[key].(float64) == 1 {
+				filteredObj[key] = data[key]
+			}
+		}
+	}
+	return filteredObj
 }

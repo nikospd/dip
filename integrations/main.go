@@ -62,6 +62,13 @@ func main() {
 			cur, err := igrCollection.Find(context.TODO(), bson.D{{"app_id", msg.AppId}})
 			cur.All(context.TODO(), &integrations)
 			for _, igr := range integrations {
+
+				//Search for existing filters
+				filterCollection := client.Database(cfg.MongoDatabase.Resources).Collection(cfg.MongoCollection.StorageFilters)
+				filter, _ := utils.CheckFilter(igr.Id, filterCollection)
+				if len(filter.Attributes) != 0 {
+					filter.Apply(&msg)
+				}
 				msg.UserId = ""
 				msg.AppId = ""
 				if err = igr.Send(msg); err != nil {

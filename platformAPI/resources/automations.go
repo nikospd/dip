@@ -46,3 +46,67 @@ func CreateAutomation(c echo.Context, client *mongo.Client, db string, autCol st
 	}
 	return c.JSON(http.StatusCreated, echo.Map{"msg": "Automation created", "id": token})
 }
+
+func GetAutomationById(c echo.Context, client *mongo.Client, db string, autCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	automationId := c.Param("id")
+	collection := client.Database(db).Collection(autCol)
+	one := collection.FindOne(context.TODO(), bson.D{
+		{"_id", automationId},
+		{"user_id", userId}})
+	if one.Err() != nil {
+		if one.Err() == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad gateway"})
+	}
+	var aut utils.Automation
+	err := one.Decode(&aut)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get automation"})
+	}
+	return c.JSON(http.StatusOK, aut)
+}
+
+func GetAutomationByApp(c echo.Context, client *mongo.Client, db string, autCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	appId := c.Param("id")
+
+	collection := client.Database(db).Collection(autCol)
+	cur, err := collection.Find(context.TODO(), bson.D{
+		{"user_id", userId},
+		{"app_id", appId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var autTable []utils.Automation
+	err = cur.All(context.TODO(), &autTable)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Error at getting automations"})
+	}
+	return c.JSON(http.StatusOK, autTable)
+}
+
+func DeleteAutomation(c echo.Context, client *mongo.Client, db string, autCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	automationId := c.Param("id")
+	collection := client.Database(db).Collection(autCol)
+	one, err := collection.DeleteOne(context.TODO(), bson.D{
+		{"_id", automationId},
+		{"user_id", userId}})
+	if one.DeletedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Automation not deleted"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}

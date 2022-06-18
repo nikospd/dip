@@ -47,6 +47,10 @@
       "description": "About integration resource"
     },
     {
+      "name": "automations",
+      "description": "About integration resource"
+    },
+    {
       "name": "data",
       "description": "About data payloads"
     }
@@ -658,7 +662,7 @@
               "type": "object",
               "properties": {
                 "description": {"type": "string"},
-                "attributes": {"type": "array", "items": {"type": "string"}}
+                "attributes": {"type": "object", "properties": {"key": {"type": "integer", "example": 1}}}
               }
             }
           }],
@@ -1112,6 +1116,81 @@
         "security": [{"Bearer": []}]
       }
     },
+    "/automation":{
+      "post":{
+        "summary": "Creates a new automation. Available types: [gt, lt, eq]. Boolean values supports only eq type.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": '#/definitions/Automation'
+            }
+          }
+        ],
+        "tags": ["automations"],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/automation/{automationId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "automationId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get automation by its Id",
+        "tags": ["automations"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "$ref": "#/definitions/Automation"
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete":{
+        "summary": "Deletes an automation by its id",
+        "tags": ["automations"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/automations/{appId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "appId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get automation by App",
+        "tags": ["automations"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/Automation"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
     "/storage/data/{storageId}":{
       "parameters":[{
         "in": "path",
@@ -1245,7 +1324,7 @@
     "Pull_Source": {
       "type": "object",
       "properties": {
-        "taskId": {"type": "object"},
+        "taskId": {"type": "string"},
         "userId": {"type": "string"},
         "appId": {"type": "string"},
         "sourceURI": {"type": "string"},
@@ -1260,7 +1339,7 @@
     "Integration": {
       "type": "object",
       "properties": {
-        "id": {"type": "object"},
+        "id": {"type": "string"},
         "userId": {"type": "string"},
         "appId": {"type": "string"},
         "type": {"type": "string"},
@@ -1278,6 +1357,25 @@
         "modifiedAt": {"type": "string"}
       }
     },
+    "Automation": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string", "readOnly": true},
+        "userId": {"type": "string", "readOnly": true},
+        "appId": {"type": "string"},
+        "type": {"type": "string", "example": "gt"},
+        "firstOperand": {
+          "type": "object",
+          "properties": {
+            "key": {"type": "integer", "example": 1}
+          }
+        },
+        "secondOperand": {"type": "number"},
+        "description": {"type": "string"},
+        "createdAt": {"type": "string", "readOnly": true},
+        "modifiedAt": {"type": "string", "readOnly": true}
+      }
+    },
     "Storage_Filter": {
       "type": "object",
       "properties": {
@@ -1285,7 +1383,7 @@
         "userId": {"type": "string"},
         "storageId": {"type": "string"},
         "description": {"type": "string"},
-        "attributes": {"type": "array", "items": {"type": "string"}},
+        "attributes": {"type": "object", "properties": {"key": {"type": "integer", "example": 1}}},
         "createdAt": {"type": "string"},
         "modifiedAt": {"type": "string"}
       }

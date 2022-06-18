@@ -123,6 +123,9 @@ func main() {
 	r.GET("integrations/:id", getIntegrationByApp)
 	//Automation routing
 	r.POST("automation", createAutomation)
+	r.GET("automation/:id", getAutomationById)
+	r.DELETE("automation/:id", deleteAutomation)
+	r.GET("automations/:id", getAutomationByApp)
 	//Data routing
 	r.GET("storage/data/:id", getStorageData)
 	/*
@@ -403,6 +406,21 @@ func createAutomation(c echo.Context) error {
 	autCol := cfg.MongoCollection.Automations
 	appCol := cfg.MongoCollection.Applications
 	return resources.CreateAutomation(c, client, db, autCol, appCol)
+}
+func getAutomationById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	autCol := cfg.MongoCollection.Automations
+	return resources.GetAutomationById(c, client, db, autCol)
+}
+func deleteAutomation(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	autCol := cfg.MongoCollection.Automations
+	return resources.DeleteAutomation(c, client, db, autCol)
+}
+func getAutomationByApp(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	autCol := cfg.MongoCollection.Automations
+	return resources.GetAutomationByApp(c, client, db, autCol)
 }
 func getStorageData(c echo.Context) error {
 	resourcesDb := cfg.MongoDatabase.Resources

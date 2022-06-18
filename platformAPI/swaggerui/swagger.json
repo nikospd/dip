@@ -1051,6 +1051,18 @@
           "in": "query",
           "name": "size",
           "type": "string"
+        },
+        {
+          "in": "query",
+          "name": "after",
+          "type": "string",
+          "description": "Datetime in ISOformat to search after that. Example: 2022-06-16T21:00:00.000Z"
+        },
+        {
+          "in": "query",
+          "name": "before",
+          "type": "string",
+          "description": "Datetime in ISOformat to search before that. Example: 2022-06-16T21:00:00.000Z"
         }],
       "get": {
         "summary": "get data payloads from a storage",

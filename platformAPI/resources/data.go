@@ -5,10 +5,12 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, dataDb string, storageCol string) error {
@@ -40,6 +42,7 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 			bson.D{{"user_id", userId}},
 			bson.D{{"shared_with_id", bson.D{{"$in", bson.A{userId}}}}}},
 		}}
+	//Get storage
 	storageCollection := client.Database(resourcesDb).Collection(storageCol)
 	one := storageCollection.FindOne(context.TODO(), findQuery)
 	if one.Err() != nil {
@@ -55,7 +58,23 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 	opts.SetSort(bson.D{{"arrived_at", -1}})
 	opts.SetLimit(int64(nPerPage))
 	opts.SetSkip(int64(nPerPage * (page - 1)))
-	cur, dferr := dataCollection.Find(context.TODO(), bson.D{}, opts)
+	//Before/After search date
+	findQuery = bson.D{}
+	layout := "2006-01-02T15:04:05.000Z"
+	if c.QueryParam("after") != "" {
+		t, _ := time.Parse(layout, c.QueryParam("after"))
+		findQuery = append(findQuery, bson.E{"arrived_at",
+			bson.D{{"$gte",
+				primitive.NewDateTimeFromTime(t)}}})
+	}
+	if c.QueryParam("before") != "" {
+		t, _ := time.Parse(layout, c.QueryParam("before"))
+		findQuery = append(findQuery, bson.E{"arrived_at",
+			bson.D{{"$lte",
+				primitive.NewDateTimeFromTime(t)}}})
+	}
+	//findQuery = bson.D{{"arrived_at", bson.D{{"$gt", primitive.NewDateTimeFromTime(time.Now().AddDate(0, 0, -2))}}}}
+	cur, dferr := dataCollection.Find(context.TODO(), findQuery, opts)
 	if dferr != nil {
 		if dferr == mongo.ErrNoDocuments {
 			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})

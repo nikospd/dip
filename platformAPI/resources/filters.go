@@ -58,27 +58,29 @@ func GetStorageFilter(c echo.Context, client *mongo.Client, dataDb string, resou
 	opts.Projection = bson.D{{"_id", 0}}
 	opts.SetSort(bson.D{{"arrived_at", -1}})
 	cur := collection.FindOne(context.TODO(), bson.D{{"user_id", userId}}, opts)
-	if cur.Err() != nil {
-		if cur.Err() == mongo.ErrNoDocuments {
-			return c.JSON(http.StatusNotFound, echo.Map{"msg": "No documents at this storage yet"})
+	var document map[string]interface{}
+	if cur.Err() == nil {
+		err := cur.Decode(&document)
+		if err != nil {
+			return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get document"})
 		}
 	}
-	var document map[string]interface{}
-	err := cur.Decode(&document)
-	if err != nil {
-		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get document"})
-	}
 
-	//Get the existing filter for this storage
+	//Get the existing filter for this storage or integration
+	integrationId := c.QueryParam("integrationId")
 	collection = client.Database(resourcesDb).Collection(filterCol)
-	cur = collection.FindOne(context.TODO(), bson.D{{"user_id", userId}, {"storage_id", storageId}})
+	if len(integrationId) > 0 {
+		cur = collection.FindOne(context.TODO(), bson.D{{"user_id", userId}, {"storage_id", integrationId}})
+	} else {
+		cur = collection.FindOne(context.TODO(), bson.D{{"user_id", userId}, {"storage_id", storageId}})
+	}
 	if cur.Err() != nil {
 		if cur.Err() == mongo.ErrNoDocuments {
 			return c.JSON(http.StatusPartialContent, echo.Map{"msg": "No filter found", "document": document, "filter": bson.A{}})
 		}
 	}
 	var filter utils.StorageFilter
-	err = cur.Decode(&filter)
+	err := cur.Decode(&filter)
 	if err != nil {
 		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get filter"})
 	}

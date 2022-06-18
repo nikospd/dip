@@ -650,7 +650,7 @@
             "name": "id",
             "type": "string",
             "required": true,
-            "description": "**Put the StorageId**"
+            "description": "**Put the StorageId or IntegrationId for filter out**"
           },{
             "in": "body",
             "name": "body",
@@ -676,7 +676,14 @@
           "type": "string",
           "required": true,
           "description": "**Put the StorageId**"
-        }],
+        },
+          {
+            "in": "query",
+            "name": "integrationId",
+            "type": "string",
+            "required": false,
+            "description": "**In case you are searching for a integration filter (out)**"
+          }],
         "tags": ["storage filters"],
         "summary": "Gets the attribute's filter of a storage if exists",
         "responses":{
@@ -1013,7 +1020,7 @@
                   "headers": {"type": "object", "example": {"key1": "value1", "key2": "value2"}}
                 }},
                 "description": {"type": "string"},
-                "automationIntegration": {"type": "boolean", "example": False}
+                "automationIntegration": {"type": "boolean", "example": "False"}
               }
             }
           }

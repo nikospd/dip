@@ -117,6 +117,10 @@ func main() {
 	r.DELETE("storage/filter/:id", deleteStorageFilter)
 	//Integration routing
 	r.POST("integration", createIntegration)
+	r.GET("integration/:id", getIntegrationById)
+	r.PUT("integration/:id", updateIntegration)
+	r.DELETE("integration/:id", deleteIntegration)
+	r.GET("integrations/:id", getIntegrationByApp)
 	//Automation routing
 	r.POST("automation", createAutomation)
 	//Data routing
@@ -373,6 +377,26 @@ func createIntegration(c echo.Context) error {
 	igrCol := cfg.MongoCollection.Integrations
 	appCol := cfg.MongoCollection.Applications
 	return resources.CreateIntegration(c, client, db, igrCol, appCol)
+}
+func getIntegrationById(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	igrCol := cfg.MongoCollection.Integrations
+	return resources.GetIntegrationById(c, client, db, igrCol)
+}
+func updateIntegration(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	igrCol := cfg.MongoCollection.Integrations
+	return resources.UpdateIntegration(c, client, db, igrCol)
+}
+func deleteIntegration(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	igrCol := cfg.MongoCollection.Integrations
+	return resources.DeleteIntegration(c, client, db, igrCol)
+}
+func getIntegrationByApp(c echo.Context) error {
+	db := cfg.MongoDatabase.Resources
+	igrCol := cfg.MongoCollection.Integrations
+	return resources.GetIntegrationByApp(c, client, db, igrCol)
 }
 func createAutomation(c echo.Context) error {
 	db := cfg.MongoDatabase.Resources

@@ -1035,6 +1035,83 @@
         "security": [{"Bearer": []}]
       }
     },
+    "/integration/{integrationId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "integrationId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get integration by its Id",
+        "tags": ["integrations"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "$ref": "#/definitions/Integration"
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      },
+      "put":{
+        "parameters":[{
+          "in": "body",
+          "name": "body",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "description": {"type": "string"},
+              "type": {"type": "string", "enum": ["httpPost"]},
+              "option": {"type": "object", "properties":{
+                "uri": {"type": "string"},
+                "headers": {"type": "object", "example": {"key1": "value1", "key2": "value2"}}
+              }},
+            },
+            "required": ["type", "option"]
+          }
+        }],
+        "summary": "Updates description, type and option",
+        "tags": ["integrations"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      },
+      "delete":{
+        "summary": "Deletes an integration by its id",
+        "tags": ["integrations"],
+        "responses":{
+          "200": {"description": "OK"}
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
+    "/integrations/{appId}":{
+      "parameters":[{
+        "in": "path",
+        "name": "appId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      }],
+      "get": {
+        "summary": "get integrations by App",
+        "tags": ["integrations"],
+        "responses":{
+          "200": {
+            "description": "",
+            "schema":{
+              "type": "array",
+              "items": {"$ref": "#/definitions/Integration"}
+            }
+          }
+        },
+        "security": [{"Bearer": []}]
+      }
+    },
     "/storage/data/{storageId}":{
       "parameters":[{
         "in": "path",
@@ -1178,6 +1255,27 @@
         "lastExecuted": {"type": "string"},
         "nextExecution": {"type": "string"},
         "createdAt": {"type": "string"}
+      }
+    },
+    "Integration": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "object"},
+        "userId": {"type": "string"},
+        "appId": {"type": "string"},
+        "type": {"type": "string"},
+        "option": {
+          "type": "object",
+          "properties":{
+            "uri": {"type": "string"},
+            "headers": {"type": "object", "example": {"key1": "value1", "key2": "value2"}}
+          }
+
+        },
+        "automation_integration": {"type": "boolean"},
+        "description": {"type": "string"},
+        "createdAt": {"type": "string"},
+        "modifiedAt": {"type": "string"}
       }
     },
     "Storage_Filter": {

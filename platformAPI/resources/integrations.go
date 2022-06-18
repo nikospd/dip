@@ -56,3 +56,109 @@ func CreateIntegration(c echo.Context, client *mongo.Client, db string, igrCol s
 	}
 	return c.JSON(http.StatusCreated, echo.Map{"msg": "Integration created", "id": token})
 }
+
+func GetIntegrationById(c echo.Context, client *mongo.Client, db string, igrCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	integrationId := c.Param("id")
+	collection := client.Database(db).Collection(igrCol)
+	one := collection.FindOne(context.TODO(), bson.D{
+		{"_id", integrationId},
+		{"user_id", userId}})
+	if one.Err() != nil {
+		if one.Err() == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad gateway"})
+	}
+	var igr utils.Integration
+	err := one.Decode(&igr)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Failed to get integration"})
+	}
+	return c.JSON(http.StatusOK, igr)
+}
+
+func GetIntegrationByApp(c echo.Context, client *mongo.Client, db string, igrCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	appId := c.Param("id")
+
+	collection := client.Database(db).Collection(igrCol)
+	cur, err := collection.Find(context.TODO(), bson.D{
+		{"user_id", userId},
+		{"app_id", appId}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusNotFound, echo.Map{"msg": "Not Found"})
+		}
+	}
+	var igrTable []utils.Integration
+	err = cur.All(context.TODO(), &igrTable)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Error at getting integrations"})
+	}
+	return c.JSON(http.StatusOK, igrTable)
+}
+
+func UpdateIntegration(c echo.Context, client *mongo.Client, db string, igrCol string) error {
+	//update description and option|type
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	integrationId := c.Param("id")
+
+	igr := new(utils.Integration)
+	if err := c.Bind(igr); err != nil {
+		return err
+	}
+	err := igr.CheckType()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": err.Error()})
+	}
+	err = igr.Option.CheckOption()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"msg": err.Error()})
+	}
+	collection := client.Database(db).Collection(igrCol)
+	filter := bson.D{{"_id", integrationId}, {"user_id", userId}}
+	//Sanitize data
+	igr.AppId = ""
+	igr.UserId = ""
+	igr.CreatedAt = time.Time{}
+	igr.ModifiedAt = time.Now()
+	//Create update query and update the database
+	updateQuery := bson.D{{"$set", igr}}
+	one, err := collection.UpdateOne(context.TODO(), filter, updateQuery)
+	//Handle errors and respond
+	if one.MatchedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Integration not found"})
+	}
+	if one.ModifiedCount == 0 {
+		return c.JSON(http.StatusNotModified, echo.Map{"msg": "Integration not modified"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}
+
+func DeleteIntegration(c echo.Context, client *mongo.Client, db string, igrCol string) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwt.StandardClaims)
+	userId := claims.Id
+	integrationId := c.Param("id")
+	collection := client.Database(db).Collection(igrCol)
+	one, err := collection.DeleteOne(context.TODO(), bson.D{
+		{"_id", integrationId},
+		{"user_id", userId}})
+	if one.DeletedCount == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Integration not deleted"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, echo.Map{"msg": "Bad Gateway"})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"msg": "OK"})
+}

@@ -82,6 +82,6 @@ func GetStorageData(c echo.Context, client *mongo.Client, resourcesDb string, da
 	}
 	var dataTable []map[string]interface{}
 	cur.All(context.TODO(), &dataTable)
-	numDoc, _ := dataCollection.CountDocuments(context.TODO(), bson.D{})
+	numDoc, _ := dataCollection.CountDocuments(context.TODO(), findQuery)
 	return c.JSON(http.StatusOK, echo.Map{"data": dataTable, "totalDocs": numDoc})
 }

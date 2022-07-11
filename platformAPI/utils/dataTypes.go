@@ -139,7 +139,7 @@ type Automation struct {
 	Description   string         `json:"description" bson:"description"`
 	Type          OperationTypes `json:"type" bson:"type,omitempty"`
 	FirstOperand  AttrOperand    `json:"firstOperand" bson:"first_operand,omitempty"`
-	SecondOperand ConstOperand   `json:"secondOperand" bson:"second_operand,omitempty"`
+	SecondOperand interface{}    `json:"secondOperand" bson:"second_operand,omitempty"`
 	CreatedAt     time.Time      `json:"createdAt" bson:"created_at,omitempty"`
 	ModifiedAt    time.Time      `json:"modifiedAt" bson:"modified_at,omitempty"`
 }
@@ -147,5 +147,3 @@ type Automation struct {
 type OperationTypes string
 
 type AttrOperand map[string]interface{}
-
-type ConstOperand interface{}

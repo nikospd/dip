@@ -104,7 +104,8 @@ func UpdateStorageFilter(c echo.Context, client *mongo.Client, db string, filter
 	filter.ModifiedAt = time.Now()
 	//Update the document
 	collection := client.Database(db).Collection(filterCol)
-	one, err := collection.UpdateOne(context.TODO(), bson.D{{"user_id", userId}, {"_id", filterId}}, filter)
+	one, err := collection.UpdateOne(context.TODO(), bson.D{{"user_id", userId}, {"_id", filterId}},
+		bson.D{{"$set", filter}})
 	if one.MatchedCount == 0 {
 		return c.JSON(http.StatusNotFound, echo.Map{"msg": "Filter not found"})
 	}
